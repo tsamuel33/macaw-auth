@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=65.5.1"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "macaw-auth"
+version = "0.0.1"
+description = "Tool to obtain AWS CLI credentials"
+readme = "README.md"
+authors = [
+    { name="Travis Samuel", email="tsamuel@alum.mit.edu" },
+]
+requires-python = ">3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "requests",
+    "requests_ntlm",
+    "beautifulsoup4",
+    "boto3",
+    "keyring"
+]
+
+[project.urls]
+"Homepage" = "https://github.com/tsamuel33/macaw-auth"
+"Bug Tracker" = "https://github.com/tsamuel33/macaw-auth/issues"
+
+[project.scripts]
+macaw-auth = "src.macaw-auth.cli.__main__:main"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages]
+find = {}
+
+[tools.setuptools.packages.find]
+where = ["src"]
+namespaces = false
