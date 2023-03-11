@@ -29,7 +29,7 @@ dependencies = [
 "Bug Tracker" = "https://github.com/tsamuel33/macaw-auth/issues"
 
 [project.scripts]
-macaw-auth = "src.macaw-auth.cli.__main__:main"
+macaw-auth = "src.macaw_auth.cli.__main__:main"
 
 [tool.setuptools]
 include-package-data = true
