@@ -25,7 +25,7 @@ username_is_email - change to username_is_iam and set as flag?
 # TODO - finish refining args list
 
 def main():
-    parser = argparse.ArgumentParser(prog='get-aws-creds', description='Utility to obtain AWS CLI credentials')
+    parser = argparse.ArgumentParser(prog='macaw-auth', description='Utility to obtain AWS CLI credentials')
     parser.add_argument('SOURCE_PROFILE', help='Name of the profile in your config file containing the desired configuration', nargs='?', default=None)
     parser.add_argument('--no-ssl-verify', action='store_false', help='Make insecure SAML request', dest='no_ssl')
     parser.add_argument('-r', '--reset-password', action='store_true', help='Reset keyring password')
