@@ -17,18 +17,19 @@ The user should have the following tools installed:
 
 Install the tool using the following command
 
-```
-pip install "macaw-auth @ git+https://github.com/tsamuel33/macaw-auth
+```text
+pip install "macaw-auth @ git+https://github.com/tsamuel33/macaw-auth"
 ```
 
 ### Usage
 
-```
+```text
 macaw-auth -h
 ```
 
 #### Output
-```
+
+```text
 usage: macaw-auth [-h] [--no-ssl-verify] [-r] [-a [{ntlm,web_form}]] [--duration-seconds DURATION_SECONDS]
                      [--identity-url IDENTITY_URL] [--disable-keyring] [--region REGION]
                      [--output {json,yaml,yaml-stream,text,table}] [--role-arn ROLE_ARN]
