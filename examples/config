@@ -1,0 +1,11 @@
+[macaw-auth]
+session_duration = 3600
+identity_url = https://<ADFS_URL>/adfs/ls/idpinitiatedsignon.htm?loginToRp=urn:amazon:webservices
+username = <EMAIL>@<DOMAIN>.<SUFFIX>
+enable_keyring = True
+region = us-east-1
+
+
+[profile example-profile]
+role_arn = arn:aws:iam::123456789012:role/<ROLE_NAME>
+principal_arn = arn:aws:iam::123456789012:saml-provider/<IAM_SAML_PROVIDER_NAME>

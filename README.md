@@ -15,19 +15,52 @@ The user should have the following tools installed:
 
 ## Installation
 
+**NOTE:** This tool is currently only installable via this GitHub repo. The tool will be made available on [PyPI](https://pypi.org/) following
+the version 0.1.0 release.
+
+### Install from GitHub Repository
+
 Install the tool using the following command
 
 ```text
 pip install "macaw-auth @ git+https://github.com/tsamuel33/macaw-auth"
 ```
 
+### Install Locally
+
+If you are unable to install the tool via the command above, you can download the contents of the repo as shown below:
+
+![Download Package](/assets/images/package_download.jpg)
+
+Navigate to the folder where you downloaded the repo contents, unzip the file, and run the following command:
+
+```text
+pip install .\macaw-auth-main --trusted-host files.pythonhosted.org
+```
+
 ### Usage
+
+A sample config file can be found [here](/examples/config). Your config file should be stored in ~/.aws/config, but if you store it elsewhere, you can pass it to
+macaw-auth using the **--credentials-file** flag. Be sure to update the following values in your config:
+
+* identity_url
+* username
+* role_arn
+* principal_arn
+
+You should also update the profile name(s) to be meaningful to you. To use the role specified in the example config, call the tool using the following command:
+
+```text
+macaw-auth example-profile
+```
+
+The tool can also be called without the profile name and you will be presented with a list of roles to which you have access.
+
+#### Help Output
 
 ```text
 macaw-auth -h
 ```
-
-#### Output
 
 ```text
 usage: macaw-auth [-h] [--no-ssl-verify] [-r] [-a [{ntlm,web_form}]] [--duration-seconds DURATION_SECONDS]
@@ -66,4 +99,13 @@ options:
   --credential-file CREDENTIAL_FILE
                         Path to credential file if ~/.aws/credentials will not be used
   --username-not-email  Indicates that the supplied username will not need to be in an email format
+```
+
+## Troubleshooting
+
+If you receive an error indicating that there's no valid SAML assertation, please double check your config settings. If you have keyring enabled, you may have stored
+an incorrect password. To reset your keyring password, run the following command:
+
+```text
+macaw-auth -r
 ```
