@@ -6,3 +6,5 @@ requirements.txt
 LICENSE.txt
 *.egg-info
 bin/
+*.secrets
+act.env
