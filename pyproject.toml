@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "macaw-auth"
-version = "0.0.2"
+version = "0.0.4"
 description = "Tool to obtain AWS CLI credentials"
 readme = "README.md"
 authors = [
@@ -17,9 +17,9 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dependencies = [
-    "requests >= 2.29",
+    "requests",
     "requests_ntlm",
-    "beautifulsoup4 >= 4.10, < 5",
+    "beautifulsoup4",
     "boto3",
     "keyring"
 ]
