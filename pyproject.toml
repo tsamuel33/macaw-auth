@@ -17,7 +17,7 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dependencies = [
-    "requests",
+    "requests >= 2.29, < 3",
     "requests_ntlm",
     "beautifulsoup4",
     "boto3",
