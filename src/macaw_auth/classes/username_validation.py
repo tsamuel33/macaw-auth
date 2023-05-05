@@ -90,7 +90,7 @@ class UsernameValidation:
         else:
             validity = True
             message = "Username is not an email address. Check not required."
-        return validity, message    
+        return validity, message
     
     # Check if prefix or domain starts with a number or letter
     @staticmethod
@@ -184,5 +184,7 @@ class UsernameValidation:
             valid_username = True
         except InvalidUsernameError as err:
             valid_username = False
+            print("Exception has been caught!")
             print('Error: ' + str(err))
+            raise err
         return valid_username

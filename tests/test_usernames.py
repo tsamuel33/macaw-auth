@@ -1,4 +1,6 @@
 from src.macaw_auth.classes.username_validation import UsernameValidation
+from src.macaw_auth.classes.errors import InvalidUsernameError
+import pytest
 
 def validate_user(username, is_email, expected_result : bool):
     user = UsernameValidation(username, is_email)
@@ -12,7 +14,12 @@ def test_valid_email():
     validate_user("fake@example.com", True, True)
 
 def test_invalid_email_symbols():
-    validate_user("us=er@equals.edu", True, False)
+    # with pytest.raises(InvalidUsernameError, validate_user, "us=er@equals.edu", True, True)
+    with pytest.raises(InvalidUsernameError) as err:
+
+        # validate_user("us=er@equals.edu", True, True)
+        user = UsernameValidation("us=er@equals.edu", True)
+        print(str(err))
 
 def test_invalid_email_multiple_ats():
     validate_user("user@hello@fake.com", True, False)
