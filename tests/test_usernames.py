@@ -2,57 +2,61 @@ from src.macaw_auth.classes.username_validation import UsernameValidation
 from src.macaw_auth.classes.errors import InvalidUsernameError
 import pytest
 
-def validate_user(username : str, is_email : bool = True, expected_result : bool = False) -> None:
-    user = UsernameValidation(username, is_email)
-    if expected_result:
-        assert user.validity
-    elif not expected_result:
-        assert not user.validity
+class TestUsernameValidation:
 
-# Email Tests
-def test_valid_email():
-    validate_user("fake@example.com", expected_result=True)
+    @staticmethod
+    def validate_user(
+            username : str,
+            is_email : bool = True, # Most tests are email addresses
+            expected_result : bool = False # Most tests are exceptions
+            ) -> None:
+        user = UsernameValidation(username, is_email)
+        if expected_result:
+            assert user.validity
+        elif not expected_result:
+            assert not user.validity
 
-def test_invalid_email_symbols():
-    with pytest.raises(InvalidUsernameError, match="contains invalid symbol"):
-        validate_user("user@equ=als.edu")
+    def expect_valid_result(self, username : str, is_email : bool = True) -> None:
+        self.validate_user(username, is_email, expected_result=True)
 
-def test_invalid_email_multiple_ats():
-    with pytest.raises(InvalidUsernameError, match="User name should contain a single '@' symbol"):
-        validate_user("user@hello@fake.com")
+    def expect_exception(self, username : str, is_email : bool, exception_regex : str) -> None:
+        with pytest.raises(InvalidUsernameError, match=exception_regex):
+            self.validate_user(username, is_email, expected_result=False)
 
-def test_invalid_email_non_alphanum_start_prefix():
-    with pytest.raises(InvalidUsernameError, match="does not start with an alphanumeric character"):
-        validate_user(".invalid@hello.net")
+    # Email Tests
+    def test_valid_email(self):
+        self.expect_valid_result("fake@example.com")
 
-def test_invalid_email_non_alphanum_start_domain():
-    with pytest.raises(InvalidUsernameError, match="does not start with an alphanumeric character"):
-        validate_user("notright@+ultra.ua")
+    def test_invalid_email_symbols(self):
+        self.expect_exception("user@equ=als.edu", True,  "contains invalid symbol")
 
-def test_invalid_email_non_alphanum_end_prefix():
-    with pytest.raises(InvalidUsernameError, match="does not end with an alphanumeric character"):
-        validate_user("invalid+@hello.net")
+    def test_invalid_email_multiple_ats(self):
+        self.expect_exception("user@hello@fake.com", True,  "User name should contain a single '@' symbol")
 
-def test_invalid_email_non_alphanum_end_domain():
-    with pytest.raises(InvalidUsernameError, match="does not end with an alphanumeric character"):
-        validate_user("notright@ultra.ua+")
+    def test_invalid_email_non_alphanum_start_prefix(self):
+        self.expect_exception(".invalid@hello.net", True, "does not start with an alphanumeric character")
 
-def test_invalid_email_alphanum_after_symbol():
-    with pytest.raises(InvalidUsernameError, match="Username contains consecutive symbols"):
-        validate_user("hello@dot.+com")
+    def test_invalid_email_non_alphanum_start_domain(self):
+        self.expect_exception("notright@+ultra.ua", True, "does not start with an alphanumeric character")
 
-def test_invalid_email_short_domain():
-    with pytest.raises(InvalidUsernameError, match="less than 2"):
-        validate_user("short@xy.z")
+    def test_invalid_email_non_alphanum_end_prefix(self):
+        self.expect_exception("invalid+@hello.net", True, "does not end with an alphanumeric character")
 
-# User Tests
-def test_valid_user():
-    validate_user("fakeusername", is_email=False, expected_result=True)
+    def test_invalid_email_non_alphanum_end_domain(self):
+        self.expect_exception("notright@ultra.ua+", True, "does not end with an alphanumeric character")
 
-def test_invalid_user_invalid_symbol():
-    with pytest.raises(InvalidUsernameError, match="contains invalid symbol"):
-        validate_user("user1!", False, False)
+    def test_invalid_email_alphanum_after_symbol(self):
+        self.expect_exception("hello@dot.+com", True, "Username contains consecutive symbols")
 
-def test_invalid_user_alphanum_after_symbol():
-    with pytest.raises(InvalidUsernameError, match="Username contains consecutive symbols"):
-        validate_user("invalid+=user", False, False)
+    def test_invalid_email_short_domain(self):
+        self.expect_exception("short@xy.z", True, "less than 2")
+
+    # # User Tests
+    def test_valid_user(self):
+        self.expect_valid_result("fakeusername", is_email=False)
+
+    def test_invalid_user_invalid_symbol(self):
+        self.expect_exception("user1!", False, "contains invalid symbol")
+
+    def test_invalid_user_alphanum_after_symbol(self):
+        self.expect_exception("invalid+=user", False, "Username contains consecutive symbols")
