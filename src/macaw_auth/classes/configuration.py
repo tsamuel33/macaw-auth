@@ -1,5 +1,5 @@
 import configparser
-from os.path import expanduser, isfile
+from pathlib import Path
 from .errors import ConfigurationError
 
 class Configuration:
@@ -23,9 +23,8 @@ class Configuration:
     #     temp
     """
 
-    default_home_directory = expanduser("~")
-    default_configuration_file = "\.aws\config"
-    default_credentials_file = "\.aws\credentials"
+    default_configuration_file = Path.home() / ".aws" / "config"
+    default_credentials_file = Path.home() / ".aws" / "credentials"
 
     def __init__(
             self, config_type, section_name, config_file=None,
@@ -43,18 +42,16 @@ class Configuration:
         if file_path is not None:
             config_path = file_path
         else:
-            home = self.default_home_directory
             if file_type == 'client' or file_type == 'user':
-                config_file = self.default_configuration_file
+                config_path = self.default_configuration_file
             elif file_type == 'credential':
-                config_file = self.default_credentials_file
+                config_path = self.default_credentials_file
             else:
                 # The config type should be transparent to end users but add an
                 # error just in case
                 message = "Invalid config type passed: {}. ".format(file_type) + \
                     "Valid config types are 'client', 'user, and 'credential'"
                 raise Configuration(message)
-            config_path = home + config_file
         return config_path
 
     # Select which section of the configuration file will be used
@@ -86,7 +83,7 @@ class Configuration:
 
 
         # Check if config file already exists
-        file_exists = isfile(self.config_path)
+        file_exists = Path.is_file(self.config_path)
         #TODO - build logic to avoid erroring out if user passes everything via command line
         #TODO - create credentials file if it doesn't exist. May do the same for config but probably not
         if not file_exists:
