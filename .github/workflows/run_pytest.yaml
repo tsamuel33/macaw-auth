@@ -1,0 +1,21 @@
+name: Run PyTest Unit Tests
+on:
+  push:
+    branches-ignore:
+      - main
+    paths:
+      - 'tests/test_*'
+      - 'src/macaw_auth/classes/*'
+permissions:
+  id-token: write
+  contents: read
+jobs:
+  PyTest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Test
+        run: |
+          pip install --upgrade pytest
+          python -m pytest -v
