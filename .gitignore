@@ -1,8 +1,8 @@
-*.pyc
+*cache*
 .venv/
 dist/
-index.html
-requirements.txt
 LICENSE.txt
 *.egg-info
 bin/
+*.secrets
+act.env
