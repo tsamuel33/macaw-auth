@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "macaw-auth"
-version = "0.0.5"
-description = "Tool to obtain AWS CLI credentials"
+version = "1.0.0"
+description = "Tool to obtain AWS CLI credentials from ADFS."
 readme = "README.md"
 authors = [
     { name="Travis Samuel", email="tsamuel@alum.mit.edu" },

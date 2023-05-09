@@ -11,31 +11,16 @@ authenticate to ADFS to obtain their AWS credentials for use with the AWS CLI.
 The user should have the following tools installed:
 
 * AWS CLI
-* Python 3.X
+* Python 3.7+
+
+**NOTE:** [Rust](https://www.rust-lang.org/) may be required when installing on Debian Linux systems.
 
 ## Installation
-
-**NOTE:** This tool is currently only installable via this GitHub repo. The tool will be made available on [PyPI](https://pypi.org/) following
-the version 0.1.0 release.
-
-### Install from GitHub Repository
 
 Install the tool using the following command
 
 ```text
-pip install "macaw-auth @ git+https://github.com/tsamuel33/macaw-auth"
-```
-
-### Install Locally
-
-If you are unable to install the tool via the command above, you can download the contents of the repo as shown below:
-
-![Download Package](/assets/images/package_download.jpg)
-
-Navigate to the folder where you downloaded the repo contents, unzip the file, and run the following command:
-
-```text
-pip install .\macaw-auth-main --trusted-host files.pythonhosted.org
+pip install macaw-auth
 ```
 
 ### Usage
