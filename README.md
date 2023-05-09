@@ -25,7 +25,7 @@ pip install macaw-auth
 
 ### Usage
 
-A sample config file can be found [here](/examples/config). Your config file should be stored in ~/.aws/config, but if you store it elsewhere, you can pass it to
+A sample config file can be found [here](https://github.com/tsamuel33/macaw-auth/blob/main/examples/config). Your config file should be stored in ~/.aws/config, but if you store it elsewhere, you can pass it to
 macaw-auth using the **--credentials-file** flag. Be sure to update the following values in your config:
 
 * identity_url
