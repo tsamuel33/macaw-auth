@@ -1,0 +1,22 @@
+name: Publish to PyPI
+on:
+  release:
+    types:
+      - published
+permissions:
+  id-token: write
+  contents: read
+jobs:
+  Publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install Build Tools
+        run: |
+          pip install --upgrade build twine
+          pip install urllib3==1.26.15 --force-reinstall
+      - name: Publish Package
+        run: |
+          python -m build
+          twine upload -u __token__ -p ${{ secrets.PYPI_API_TOKEN }} dist/*
