@@ -1,0 +1,21 @@
+name: Create Release
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        type: string
+        description: Semantic version for release (i.e., 0.1.0)
+        required: true
+permissions:
+  id-token: write
+  contents: write
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+jobs:
+  CreateRelease:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Create Release
+        run: gh release create v${{ github.event.inputs.version }} --generate-notes
