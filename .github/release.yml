@@ -5,9 +5,11 @@ changelog:
     - title: Breaking Changes
       labels:
         - breaking-change
+        - major-update
     - title: Upgrades and New Features
       labels:
         - enhancement
+        - minor-update
     - title: Other Changes
       labels:
         - "*"
