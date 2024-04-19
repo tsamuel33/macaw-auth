@@ -88,9 +88,29 @@ options:
 
 ## Troubleshooting
 
+### Clear Saved Password
+
 If you receive an error indicating that there's no valid SAML assertation, please double check your config settings. If you have keyring enabled, you may have stored
-an incorrect password. To reset your keyring password, run the following command:
+an incorrect password. To reset your keyring password, run one of the following commands:
 
 ```text
 macaw-auth -r
 ```
+
+or
+
+```text
+macaw-auth --reset-password
+```
+
+### Errors Running the Utility With Keyring Enabled
+
+This utility gives the option to use [Keyring](https://pypi.org/project/keyring/) to locally store your password. If you attempt to use Keyring and do not have a proper backend set up as stated in the Keyring documentation, macaw-auth may not work. To disable Keyring, use one of the following options:
+
+#### 1. **Disable Keyring in Config File**
+
+In your config file, you can set ```enable_keyring = False``` in the **[macaw-auth]** section
+
+#### 2. **Disable Keyring via CLI**
+
+When running macaw-auth commands, you can add the **--disable-keyring** flag (e.g., ```macaw-auth --disable-keyring```).
