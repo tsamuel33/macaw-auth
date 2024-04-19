@@ -29,13 +29,14 @@ def get_username(name: str) -> str:
 
 def main() -> None:
     args = cli_main()
+    #FOR DEBUGGING
     # print(args)
 
     print('Welcome! Checking your configuration files...')
     client_config = Configuration('client', 'macaw-auth',
                            session_duration=(arg_to_string(args['duration_seconds']),False, '3600'),
                            identity_url=(arg_to_string(args['identity_url']),True, ''),
-                           enable_keyring=(arg_to_string(args['keyring']),False, 'True'),
+                           enable_keyring=(arg_to_string(args['enable_keyring']),False, 'False'),
                            username=(None, False, ''))
     client = client_config.config[client_config.config_section]
     role_config = Configuration('user', arg_to_string(args['SOURCE_PROFILE']),
@@ -48,9 +49,8 @@ def main() -> None:
 
     user = get_username(client['username'])
     validation = UsernameValidation(user, args['username_not_email'])
-    user_creds = UserCredentials(validation.username, args['reset_password'], client['enable_keyring'])
-    assertion = SAMLAssertion(validation.username, user_creds.get_keyring_password(), client['identity_url'], args['auth_type'], args['no_ssl'])
-    roles = AWSSTSService(assertion.assertion, role['principal_arn'], role['role_arn'], int(client['session_duration']), role['region'])
+    user_creds = UserCredentials(validation.username, client['identity_url'], args['auth_type'], args['no_ssl'], args['reset_password'], client['enable_keyring'])
+    roles = AWSSTSService(user_creds.assertion, role['principal_arn'], role['role_arn'], int(client['session_duration']), role['region'])
 
 
     aws_creds = AWSCredentials('credential', arg_to_string(args['target_profile']),
