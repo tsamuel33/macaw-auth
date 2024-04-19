@@ -16,13 +16,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Create Release
         run: gh release create v${{ github.event.inputs.version }} --generate-notes
       - name: Install Build Tools
         run: |
           pip install --upgrade build twine
-          pip install urllib3==1.26.15 --force-reinstall
       - name: Publish Package
         run: |
           python -m build
