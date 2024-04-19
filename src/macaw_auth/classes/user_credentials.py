@@ -3,6 +3,7 @@
 # dbus-python may not install properly via pip, so may need to disable keyring on linux
 import keyring
 from getpass import getpass
+from .idp_connection import SAMLAssertion
 
 class UserCredentials:
     """
@@ -25,21 +26,21 @@ class UserCredentials:
     # Set constant values
     keyring_service_name = "AWSUserCredentials"
 
-    def __init__(self, username, reset_password=False, enable_keyring=False):
+    def __init__(self, username, identity_url, auth_type, ssl_verification=True, reset_password=False, enable_keyring=False):
         self.username = username
-        self.reset_password = reset_password
         self.enable_keyring = enable_keyring
-        if enable_keyring:
+        if enable_keyring.lower() == "true":
             keyring.get_keyring()
             self._password_stored = self.check_if_password_stored()
             if not self._password_stored:
                 self.set_keyring_password(getpass())
-            elif self._password_stored and self.reset_password:
+            elif self._password_stored and reset_password:
                 print('Resetting password.')
                 self.set_keyring_password(getpass())
+            self.__password = self.get_keyring_password()
         else:
             self.__password = getpass()
-            #TODO - add a way to pass password if keyring is disabled
+        self.assertion = SAMLAssertion(self.username, self.__password, identity_url, auth_type, ssl_verification).assertion
 
     def get_keyring_password(self):
         if self.enable_keyring:

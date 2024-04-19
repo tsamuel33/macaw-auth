@@ -32,7 +32,7 @@ def main():
     parser.add_argument('-a', '--auth-type', help='Authorization type used for SAML request', choices=['ntlm', 'web_form'], nargs='?', default='web_form')
     parser.add_argument('--duration-seconds', help="Length of time in seconds in which credentials are valid", type=int)
     parser.add_argument('--identity-url', help='URL used to initiate SAML request')
-    parser.add_argument('--disable-keyring', action='store_false', help='Disable storing password in keyring', dest='keyring')
+    parser.add_argument('--disable-keyring', action='store_const', help='Disable storing password in keyring', const=False, dest='enable_keyring')
     parser.add_argument('--region', help='Default AWS region for CLI commands')
     parser.add_argument('--output', help='The desired AWS CLI output format', choices=['json', 'yaml', 'yaml-stream', 'text', 'table'])
     parser.add_argument('--role-arn', help='ARN of the role that you want to assume')
