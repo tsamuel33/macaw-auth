@@ -12,7 +12,7 @@ jobs:
       - name: Install Build Tools
         run: |
           pip install --upgrade build twine
-          pip install urllib3==1.26.15 --force-reinstall
+          # pip install urllib3==1.26.15 --force-reinstall
       - name: Publish Package
         run: |
           python -m build
