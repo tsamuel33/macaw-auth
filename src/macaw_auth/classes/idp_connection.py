@@ -86,13 +86,15 @@ class SAMLAssertion:
                 mfa_enabled = True
 
         if (assertion == ''):
+            invalid_assertion = True
             if mfa_enabled:
                 self.authenticate_with_mfa()
                 for inputtag in self.__soup.find_all('input'):
                     if(inputtag.get('name') == 'SAMLResponse'):
                         assertion = inputtag.get('value')
+                        invalid_assertion = False
                         break
-            else:
+            if invalid_assertion:
                 #TODO: Insert valid error checking/handling
                 print('Response did not contain a valid SAML assertion')
                 sys.exit(0)
