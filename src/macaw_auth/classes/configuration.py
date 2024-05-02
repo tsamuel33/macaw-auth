@@ -5,7 +5,7 @@ from .errors import ConfigurationError
 class Configuration:
     """
     A base class used to define various configurations used by the utility
-    including client config, role config, and user credentials
+    including role config and user credentials
 
     ...
 
@@ -42,7 +42,7 @@ class Configuration:
         if file_path is not None:
             config_path = file_path
         else:
-            if file_type == 'client' or file_type == 'user':
+            if file_type == 'user':
                 config_path = self.default_configuration_file
             elif file_type == 'credential':
                 config_path = self.default_credentials_file
@@ -50,8 +50,8 @@ class Configuration:
                 # The config type should be transparent to end users but add an
                 # error just in case
                 message = "Invalid config type passed: {}. ".format(file_type) + \
-                    "Valid config types are 'client', 'user, and 'credential'"
-                raise Configuration(message)
+                    "Valid config types are 'user' and 'credential'"
+                raise ConfigurationError(message)
         return config_path
 
     # Select which section of the configuration file will be used
@@ -61,18 +61,17 @@ class Configuration:
                 config_section = 'default'
             else:
                 config_section = section
-        elif section is None:
-            config_section = 'macaw-auth'
-        elif self.config_type == 'client':
-            config_section = section
         elif self.config_type == 'user':
-            config_section = 'profile ' + section
+            if section is None:
+                config_section = 'macaw-auth'
+            else:
+                config_section = 'profile ' + section
         else:
             # The config type should be transparent to end users but add an
             # error just in case
             message = "Invalid config type passed: {}. ".format(self.config_type) + \
-                "Valid config types are 'client', 'user, and 'credential'"
-            raise Configuration(message)
+                "Valid config types are 'user, and 'credential'"
+            raise ConfigurationError(message)
         return config_section
 
     def initialize_config(self):
@@ -93,27 +92,24 @@ class Configuration:
     
     def get_config_setting(self, attribute):
         setting = self.config[self.config_section].get(attribute)
+        # If value isn't found in profile, check macaw-auth section
+        if setting is None and self.config_type == 'user' and self.config_section != 'macaw-auth':
+            setting = self.config['macaw-auth'].get(attribute)
         return setting
-
-    def set_optional_setting(self, setting, default):
-        value = self.get_config_setting(setting)
-        if value is None:
-            self.config[self.config_section][setting] = default
-
-    def get_required_setting(self, attribute):
-        value = self.get_config_setting(attribute)
-        if value is None:
-            #TODO - Check 'macaw-auth' section before erroring out
-            message = "Required configuration value is missing: " + attribute
-            raise ConfigurationError(message)
 
     def set_config_value(self, attribute_name, value, required=False, default=''):
         if value is not None:
-            self.config[self.config_section][attribute_name] = str(value)
-        elif required:
-            self.get_required_setting(attribute_name)
+            self.config[self.config_section][attribute_name] = value
         else:
-            self.set_optional_setting(attribute_name, default)
+            setting = self.get_config_setting(attribute_name)
+            if setting is None:
+                if required:
+                    message = "Required configuration value is missing: " + attribute_name
+                    raise ConfigurationError(message)
+                else:
+                    self.config[self.config_section][attribute_name] = default
+            else:
+                self.config[self.config_section][attribute_name] = setting
     
     def parse_config_parameters(self):
         for key, value in self.config_parameters.items():
