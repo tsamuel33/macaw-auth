@@ -76,12 +76,6 @@ class Configuration:
         return config_section
 
     def initialize_config(self):
-
-        # if self.config_section is None:
-        #     config = configparser.ConfigParser()
-        # else:
-
-
         # Check if config file already exists
         file_exists = Path.is_file(self.config_path)
         #TODO - build logic to avoid erroring out if user passes everything via command line
@@ -98,28 +92,15 @@ class Configuration:
         return config
     
     def get_config_setting(self, attribute):
-        # if self.config_section is None:
-        #     return None
-        # else:
         setting = self.config[self.config_section].get(attribute)
         return setting
 
     def set_optional_setting(self, setting, default):
-        # if self.config_section is None:
-        #     self.config.add_section('None')
-        #     self.config['None'][setting] = default
-        #     print(self.config['None'][setting])
-        # else:
         value = self.get_config_setting(setting)
         if value is None:
             self.config[self.config_section][setting] = default
 
     def get_required_setting(self, attribute):
-        # if self.config_section is None:
-        #     message = "Required configuration value: {} ".format(attribute) + \
-        #         "was not provided via command line and no profile was selected."
-        #     raise ConfigurationError(message)
-        # else:
         value = self.get_config_setting(attribute)
         if value is None:
             #TODO - Check 'macaw-auth' section before erroring out
@@ -128,9 +109,6 @@ class Configuration:
 
     def set_config_value(self, attribute_name, value, required=False, default=''):
         if value is not None:
-            # if self.config_section is None:
-            #     self.config[attribute_name] = str(value)
-            # else:
             self.config[self.config_section][attribute_name] = str(value)
         elif required:
             self.get_required_setting(attribute_name)
