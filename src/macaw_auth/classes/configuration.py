@@ -99,7 +99,7 @@ class Configuration:
 
     def set_config_value(self, attribute_name, value, required=False, default=''):
         if value is not None:
-            self.config[self.config_section][attribute_name] = value
+            self.config[self.config_section][attribute_name] = str(value)
         else:
             setting = self.get_config_setting(attribute_name)
             if setting is None:
