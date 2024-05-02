@@ -122,6 +122,7 @@ class Configuration:
         # else:
         value = self.get_config_setting(attribute)
         if value is None:
+            #TODO - Check 'macaw-auth' section before erroring out
             message = "Required configuration value is missing: " + attribute
             raise ConfigurationError(message)
 
@@ -139,3 +140,21 @@ class Configuration:
     def parse_config_parameters(self):
         for key, value in self.config_parameters.items():
             self.set_config_value(key, value[0], value[1], value[2])
+
+    def generate_arn(self, partition, account, iam_type, name, path="/"):
+        if iam_type == "saml":
+            prefix = "saml-provider"
+            cleaned_path = ""
+        elif iam_type == "role":
+            prefix = "role"
+            cleaned_path = path
+            if path.startswith("/"):
+                cleaned_path = cleaned_path[1:len(cleaned_path)]
+            if path.endswith("/"):
+                cleaned_path = cleaned_path[:-1]
+        if len(cleaned_path) == 0:
+            suffix = name
+        else:
+            suffix = "/".join((cleaned_path, name))
+        arn = "arn:{}:iam::{}:{}/{}".format(partition, account, prefix, suffix)
+        return arn
