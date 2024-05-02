@@ -1,6 +1,18 @@
 import configparser
 from pathlib import Path
-from .errors import ConfigurationError
+
+class ConfigurationError(Exception):
+    """Raises an exception when required configuration items are
+    set incorrectly.
+
+    Attributes:
+        message -- message indicating the specifics of the error
+    """
+
+    def __init__(self,
+            message='Incorrect configuration. Check your configuration file'):
+        self.message = message
+        super().__init__(self.message)
 
 class Configuration:
     """
