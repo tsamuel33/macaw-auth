@@ -1,5 +1,5 @@
 from src.macaw_auth.classes.username_validation import UsernameValidation
-from src.macaw_auth.classes.errors import InvalidUsernameError
+from src.macaw_auth.classes.username_validation import InvalidUsernameError
 import pytest
 
 class TestUsernameValidation:

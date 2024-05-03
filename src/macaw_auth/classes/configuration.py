@@ -1,11 +1,23 @@
 import configparser
 from pathlib import Path
-from .errors import ConfigurationError
+
+class ConfigurationError(Exception):
+    """Raises an exception when required configuration items are
+    set incorrectly.
+
+    Attributes:
+        message -- message indicating the specifics of the error
+    """
+
+    def __init__(self,
+            message='Incorrect configuration. Check your configuration file'):
+        self.message = message
+        super().__init__(self.message)
 
 class Configuration:
     """
     A base class used to define various configurations used by the utility
-    including client config, role config, and user credentials
+    including role config and user credentials
 
     ...
 
@@ -42,7 +54,7 @@ class Configuration:
         if file_path is not None:
             config_path = file_path
         else:
-            if file_type == 'client' or file_type == 'user':
+            if file_type == 'user':
                 config_path = self.default_configuration_file
             elif file_type == 'credential':
                 config_path = self.default_credentials_file
@@ -50,8 +62,8 @@ class Configuration:
                 # The config type should be transparent to end users but add an
                 # error just in case
                 message = "Invalid config type passed: {}. ".format(file_type) + \
-                    "Valid config types are 'client', 'user, and 'credential'"
-                raise Configuration(message)
+                    "Valid config types are 'user' and 'credential'"
+                raise ConfigurationError(message)
         return config_path
 
     # Select which section of the configuration file will be used
@@ -61,27 +73,20 @@ class Configuration:
                 config_section = 'default'
             else:
                 config_section = section
-        elif section is None:
-            config_section = 'macaw-auth'
-        elif self.config_type == 'client':
-            config_section = section
         elif self.config_type == 'user':
-            config_section = 'profile ' + section
+            if section is None:
+                config_section = 'macaw-auth'
+            else:
+                config_section = 'profile ' + section
         else:
             # The config type should be transparent to end users but add an
             # error just in case
             message = "Invalid config type passed: {}. ".format(self.config_type) + \
-                "Valid config types are 'client', 'user, and 'credential'"
-            raise Configuration(message)
+                "Valid config types are 'user, and 'credential'"
+            raise ConfigurationError(message)
         return config_section
 
     def initialize_config(self):
-
-        # if self.config_section is None:
-        #     config = configparser.ConfigParser()
-        # else:
-
-
         # Check if config file already exists
         file_exists = Path.is_file(self.config_path)
         #TODO - build logic to avoid erroring out if user passes everything via command line
@@ -98,43 +103,25 @@ class Configuration:
         return config
     
     def get_config_setting(self, attribute):
-        # if self.config_section is None:
-        #     return None
-        # else:
         setting = self.config[self.config_section].get(attribute)
+        # If value isn't found in profile, check macaw-auth section
+        if setting is None and self.config_type == 'user' and self.config_section != 'macaw-auth':
+            setting = self.config['macaw-auth'].get(attribute)
         return setting
-
-    def set_optional_setting(self, setting, default):
-        # if self.config_section is None:
-        #     self.config.add_section('None')
-        #     self.config['None'][setting] = default
-        #     print(self.config['None'][setting])
-        # else:
-        value = self.get_config_setting(setting)
-        if value is None:
-            self.config[self.config_section][setting] = default
-
-    def get_required_setting(self, attribute):
-        # if self.config_section is None:
-        #     message = "Required configuration value: {} ".format(attribute) + \
-        #         "was not provided via command line and no profile was selected."
-        #     raise ConfigurationError(message)
-        # else:
-        value = self.get_config_setting(attribute)
-        if value is None:
-            message = "Required configuration value is missing: " + attribute
-            raise ConfigurationError(message)
 
     def set_config_value(self, attribute_name, value, required=False, default=''):
         if value is not None:
-            # if self.config_section is None:
-            #     self.config[attribute_name] = str(value)
-            # else:
             self.config[self.config_section][attribute_name] = str(value)
-        elif required:
-            self.get_required_setting(attribute_name)
         else:
-            self.set_optional_setting(attribute_name, default)
+            setting = self.get_config_setting(attribute_name)
+            if setting is None:
+                if required:
+                    message = "Required configuration value is missing: " + attribute_name
+                    raise ConfigurationError(message)
+                else:
+                    self.config[self.config_section][attribute_name] = default
+            else:
+                self.config[self.config_section][attribute_name] = setting
     
     def parse_config_parameters(self):
         for key, value in self.config_parameters.items():

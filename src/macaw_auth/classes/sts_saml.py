@@ -6,22 +6,41 @@ import xml.etree.ElementTree as ET
 class AWSSTSService:
 
     def __init__(
-            self, saml_assertion, principal_arn, role_arn=None,
-            session_duration=3600, region='us-east-1'):
+            self, saml_assertion, account_number, idp_name, role_name, path="/",
+            partition="aws", session_duration=3600, region='us-east-1'):
         self.sts = boto3.client('sts', region_name=region)
-        self.principal_arn = principal_arn
+        empty = ['', None]
         self.saml_assertion = saml_assertion
         #TODO - Add validation for principal_arn as well
-        if role_arn == '' or role_arn is None or principal_arn == '' or principal_arn is None:
+        if account_number in empty or idp_name in empty:
             self.get_authorized_roles()
         else:
-            self.role_arn = role_arn
-            self.principal_arn = principal_arn
+            self.role_arn = self.generate_arn(partition, account_number, "role", role_name, path)
+            self.principal_arn = self.generate_arn(partition, account_number, "saml", idp_name)
         self.duration = session_duration
         self.__credentials = self.assume_role_with_saml()['Credentials']
         self.split_creds()
 
+    def generate_arn(self, partition, account, iam_type, name, path="/"):
+        if iam_type == "saml":
+            prefix = "saml-provider"
+            cleaned_path = ""
+        elif iam_type == "role":
+            prefix = "role"
+            cleaned_path = path
+            if path.startswith("/"):
+                cleaned_path = cleaned_path[1:len(cleaned_path)]
+            if path.endswith("/"):
+                cleaned_path = cleaned_path[:-1]
+        if len(cleaned_path) == 0:
+            suffix = name
+        else:
+            suffix = "/".join((cleaned_path, name))
+        arn = "arn:{}:iam::{}:{}/{}".format(partition, account, prefix, suffix)
+        return arn
 
+    #TODO - add error handling if user passes a bad role or principal arn
+    #botocore.errorfactory.InvalidIdentityTokenException: An error occurred (InvalidIdentityToken) when calling the AssumeRoleWithSAML operation: SAML Assertion doesn't contain the requested Role and Metadata in the attributes
     def assume_role_with_saml(self):
         response = self.sts.assume_role_with_saml(
             RoleArn=self.role_arn,
@@ -30,7 +49,7 @@ class AWSSTSService:
             DurationSeconds=self.duration
         )
         return response
-    
+
     def get_authorized_roles(self):
         # Parse the returned assertion and extract the authorized roles
         awsroles = []
@@ -73,8 +92,6 @@ class AWSSTSService:
         else:
             self.role_arn = awsroles[0].split(',')[0]
             self.principal_arn = awsroles[0].split(',')[1]
-        print(self.role_arn)
-        print(self.principal_arn)
 
     def split_creds(self):
         self._aws_access_key_id = self.__credentials['AccessKeyId']

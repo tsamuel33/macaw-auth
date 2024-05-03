@@ -1,4 +1,13 @@
-from .errors import InvalidUsernameError
+class InvalidUsernameError(Exception):
+    """Raises an exception when an invalid username is entered
+
+    Attributes:
+        message -- message indicating the specifics of the error
+    """
+
+    def __init__(self, message='Invalid user name entered'):
+        self.message = message
+        super().__init__(self.message)
 
 class UsernameValidation:
     """

@@ -25,19 +25,10 @@ class SAMLAssertion:
     def make_saml_request(self):
         if self.auth_type == 'ntlm':
             self.session.auth = HttpNtlmAuth(self.__username, self.__password, self.session)
-            feature = "html.parser"
-        elif self.auth_type == 'web_form':
-            # feature = "lxml"
-            feature = "html.parser"
-        else:
-            message = "Incorrect authorization type provided. Valid types are 'ntlm' or 'web_form'"
-            ##RAISE ERROR - TODO
         self.response = self.session.get(self.identity_url, verify=self.ssl_verification)
-        self._redirect_url = self.response.url
-        self.__soup = BeautifulSoup(self.response.text, features=feature)
-
-        # formsoup = BeautifulSoup(response.text, features="lxml")
-        # payload = {}
+        if self.auth_type == 'web_form':
+            self._redirect_url = self.response.url
+        self.__soup = BeautifulSoup(self.response.text, features="html.parser")
 
     def create_web_form_payload(self):
         payload = {}
