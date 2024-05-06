@@ -1,4 +1,5 @@
 import argparse
+from importlib.metadata import version
 
 """
 section_name(Source Profile) - position argument
@@ -42,8 +43,7 @@ def main():
     parser.add_argument('-n', '--role-name', help='The name of your IAM role')
     parser.add_argument('-t', '--target-profile', help='Name of the section where credentials will be stored in the credentials file', type=str)
     parser.add_argument('-u', '--username-not-email', action='store_false', help='Indicates that the supplied username will not need to be in an email format')
-    #TODO - set up dynamic version resolution from pyproject.toml
-    parser.add_argument('-v', '--version', action='version', version='%(prog)s 2.0.0')
+    parser.add_argument('-v', '--version', action='version', version=version("macaw-auth"))
 
     args = parser.parse_args()
     return vars(args)
