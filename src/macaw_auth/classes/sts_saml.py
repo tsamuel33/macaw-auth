@@ -12,7 +12,7 @@ class AWSSTSService:
         empty = ['', None]
         self.saml_assertion = saml_assertion
         #TODO - Add validation for principal_arn as well
-        if account_number in empty or idp_name in empty:
+        if account_number in empty or idp_name in empty or role_name in empty:
             self.get_authorized_roles()
         else:
             self.role_arn = self.generate_arn(partition, account_number, "role", role_name, path)
@@ -100,28 +100,14 @@ class AWSSTSService:
         self._expiration = self.__credentials['Expiration']
 
     # TODO - Allow role assumption after login
+    # TODO - Add ability to assume role using external ID and MFA
     def assume_role(self):
-        response = self.sts.assume_role(
+        sts = boto3.client('sts', region_name=None, aws_access_key_id=None, aws_secret_access_key=None, aws_session_token=None)
+        response = sts.assume_role(
             RoleArn='string',
             RoleSessionName='string',
-            PolicyArns=[
-                {
-                    'arn': 'string'
-                },
-            ],
-            Policy='string',
-            DurationSeconds=123,
-            Tags=[
-                {
-                    'Key': 'string',
-                    'Value': 'string'
-                },
-            ],
-            TransitiveTagKeys=[
-                'string',
-            ],
-            ExternalId='string',
-            SerialNumber='string',
-            TokenCode='string',
-            SourceIdentity='string'
+            DurationSeconds=self.duration,
+            # ExternalId='string',
+            # SerialNumber='string',
+            # TokenCode='string'
         )
