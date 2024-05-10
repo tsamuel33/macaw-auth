@@ -5,8 +5,10 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "macaw-auth"
 version = "1.2.0"
-description = "Tool to obtain AWS CLI credentials from ADFS."
+description = "Utility to authenticate to AWS Services via CLI using ADFS"
 readme = "README.md"
+# keywords = []
+# license
 authors = [
     { name="Travis Samuel", email="tsamuel@alum.mit.edu" },
 ]
@@ -29,14 +31,12 @@ dependencies = [
 "Bug Tracker" = "https://github.com/tsamuel33/macaw-auth/issues"
 
 [project.scripts]
-macaw-auth = "src.macaw_auth.cli.__main__:main"
+macaw-auth = "macaw_auth.main:main"
 
 [tool.setuptools]
 include-package-data = true
 
-[tool.setuptools.packages]
-find = {}
-
 [tools.setuptools.packages.find]
 where = ["src"]
+include = ["macaw_auth*"]
 namespaces = false

@@ -6,7 +6,7 @@ from ..classes.configuration import Configuration
 from ..classes.idp_connection import SAMLAssertion
 from ..classes.sts_saml import AWSSTSService
 from ..classes.aws_credentials import AWSCredentials
-from .cli import main as cli_main
+# from .cli import main as cli_main
 from getpass import getpass
 
 def arg_to_string(arg) -> str:
@@ -27,8 +27,8 @@ def get_username(name: str) -> str:
         user = input('User ID: ')
     return user
 
-def main() -> None:
-    args = cli_main()
+def main(args) -> None:
+    # args = cli_main()
     #FOR DEBUGGING
     # print(args)
 
