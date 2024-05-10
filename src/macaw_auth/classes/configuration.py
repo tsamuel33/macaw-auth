@@ -119,6 +119,6 @@ class Configuration:
             else:
                 self.config[self.config_section][attribute_name] = setting
     
-    def parse_config_parameters(self, parameters):
+    def parse_config_parameters(self, parameters : dict):
         for key, value in parameters.items():
             self.set_config_value(key, value[0], value[1], value[2])
