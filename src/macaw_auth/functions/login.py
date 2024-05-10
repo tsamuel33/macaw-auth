@@ -63,19 +63,19 @@ def main(args) -> None:
     }
     client_config.parse_config_parameters(client_parameters)
     client = client_config.config[client_config.config_section]
-    print(client['account_number'])
-    # user = get_username(client['username'])
-    # validation = UsernameValidation(user, args['username_not_email'])
-    # user_creds = UserCredentials(validation.username, client['identity_url'], args['auth_type'], args['no_ssl'], args['reset_password'], client['enable_keyring'])
-    # roles = AWSSTSService(user_creds.assertion, client['account_number'], client['idp_name'], client['role_name'], client['path'], client['partition'], int(client['session_duration']), client['region'])
-    # aws_creds = AWSCredentials('credential', arg_to_string(args['target_profile']),
-    #                             arg_to_string(args['credential_file']),
-    #                             region=(client['region'],False, 'us-east-1'),
-    #                             output=(client['output'],False, 'json'),
-    #                             aws_access_key_id=(roles._aws_access_key_id, True, ''),
-    #                             aws_secret_access_key=(roles._aws_secret_access_key, True, ''),
-    #                             aws_session_token=(roles._aws_session_token, True, ''),
-    #                             expiration=(roles._expiration,True, ''))
+    user = get_username(client['username'])
+    validation = UsernameValidation(user, args['username_not_email'])
+    user_creds = UserCredentials(validation.username, client['identity_url'], args['auth_type'], args['no_ssl'], args['reset_password'], client['enable_keyring'])
+    roles = AWSSTSService(user_creds.assertion, client['account_number'], client['idp_name'], client['role_name'], client['path'], client['partition'], int(client['session_duration']), client['region'])
+    #TODO - Call AWSCredentials class within AWSSTSService class
+    aws_creds = AWSCredentials('credential', arg_to_string(args['target_profile']),
+                                arg_to_string(args['credential_file']),
+                                region=(client['region'],False, 'us-east-1'),
+                                output=(client['output'],False, 'json'),
+                                aws_access_key_id=(roles._aws_access_key_id, True, ''),
+                                aws_secret_access_key=(roles._aws_secret_access_key, True, ''),
+                                aws_session_token=(roles._aws_session_token, True, ''),
+                                expiration=(roles._expiration,True, ''))
 
 if __name__ == '__main__':
     sys.exit(main())
