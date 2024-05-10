@@ -38,16 +38,12 @@ class Configuration:
     default_configuration_file = Path.home() / ".aws" / "config"
     default_credentials_file = Path.home() / ".aws" / "credentials"
 
-    def __init__(
-            self, config_type, section_name, config_file=None,
-            **config_parameters : tuple):
+    def __init__(self, config_type, section_name, config_file=None):
         self.config_type = config_type
         self.config_path = self.select_config_file_path(
             config_type, config_file)
         self.config_section = self.select_config_section(section_name)
         self.config = self.initialize_config()
-        self.config_parameters = config_parameters
-        self.parse_config_parameters()
 
     # Set the configuration/credential file to use
     def select_config_file_path(self, file_type, file_path):
@@ -101,7 +97,7 @@ class Configuration:
         if self.config_section not in config.sections():
             config.add_section(self.config_section)
         return config
-    
+
     def get_config_setting(self, attribute):
         setting = self.config[self.config_section].get(attribute)
         # If value isn't found in profile, check macaw-auth section
@@ -123,6 +119,6 @@ class Configuration:
             else:
                 self.config[self.config_section][attribute_name] = setting
     
-    def parse_config_parameters(self):
-        for key, value in self.config_parameters.items():
+    def parse_config_parameters(self, parameters : dict):
+        for key, value in parameters.items():
             self.set_config_value(key, value[0], value[1], value[2])

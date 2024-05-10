@@ -6,19 +6,18 @@ import xml.etree.ElementTree as ET
 class AWSSTSService:
 
     def __init__(
-            self, saml_assertion, account_number, idp_name, role_name, path="/",
+            self, saml_assertion=None, account_number=None, idp_name=None, role_name=None, path="/",
             partition="aws", session_duration=3600, region='us-east-1'):
         self.sts = boto3.client('sts', region_name=region)
         empty = ['', None]
-        self.saml_assertion = saml_assertion
         #TODO - Add validation for principal_arn as well
         if account_number in empty or idp_name in empty or role_name in empty:
-            self.get_authorized_roles()
+            self.get_authorized_roles(saml_assertion)
         else:
             self.role_arn = self.generate_arn(partition, account_number, "role", role_name, path)
             self.principal_arn = self.generate_arn(partition, account_number, "saml", idp_name)
         self.duration = session_duration
-        self.__credentials = self.assume_role_with_saml()['Credentials']
+        self.__credentials = self.assume_role_with_saml(saml_assertion)['Credentials']
         self.split_creds()
 
     def generate_arn(self, partition, account, iam_type, name, path="/"):
@@ -41,19 +40,19 @@ class AWSSTSService:
 
     #TODO - add error handling if user passes a bad role or principal arn
     #botocore.errorfactory.InvalidIdentityTokenException: An error occurred (InvalidIdentityToken) when calling the AssumeRoleWithSAML operation: SAML Assertion doesn't contain the requested Role and Metadata in the attributes
-    def assume_role_with_saml(self):
+    def assume_role_with_saml(self, assertion):
         response = self.sts.assume_role_with_saml(
             RoleArn=self.role_arn,
             PrincipalArn=self.principal_arn,
-            SAMLAssertion=self.saml_assertion,
+            SAMLAssertion=assertion,
             DurationSeconds=self.duration
         )
         return response
 
-    def get_authorized_roles(self):
+    def get_authorized_roles(self, assertion):
         # Parse the returned assertion and extract the authorized roles
         awsroles = []
-        root = ET.fromstring(base64.b64decode(self.saml_assertion))
+        root = ET.fromstring(base64.b64decode(assertion))
         for saml2attribute in root.iter('{urn:oasis:names:tc:SAML:2.0:assertion}Attribute'):
             if (saml2attribute.get('Name') == 'https://aws.amazon.com/SAML/Attributes/Role'):
                 for saml2attributevalue in saml2attribute.iter('{urn:oasis:names:tc:SAML:2.0:assertion}AttributeValue'):
