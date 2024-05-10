@@ -6,7 +6,7 @@ from ..classes.configuration import Configuration
 from ..classes.idp_connection import SAMLAssertion
 from ..classes.sts_saml import AWSSTSService
 from ..classes.aws_credentials import AWSCredentials
-from .cli import main as cli_main
+# from .cli import main as cli_main
 from getpass import getpass
 
 def arg_to_string(arg) -> str:
@@ -27,8 +27,8 @@ def get_username(name: str) -> str:
         user = input('User ID: ')
     return user
 
-def main() -> None:
-    args = cli_main()
+def main(args) -> None:
+    # args = cli_main()
     #FOR DEBUGGING
     # print(args)
 
@@ -41,6 +41,7 @@ def main() -> None:
                            username=(None, False, ''),
                            account_number=(arg_to_string(args['account_number']),False, ''),
                            idp_name=(arg_to_string(args['idp_name']),False, ''),
+                           role_name=(arg_to_string(args['role_name']),False, ''),
                            region=(arg_to_string(args['region']),False, 'us-east-1'),
                            output=(arg_to_string(args['output']),False, 'json'),
                            connection_type=(arg_to_string((args['auth_type'])),False, 'web_form'),
