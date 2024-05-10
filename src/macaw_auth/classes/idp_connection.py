@@ -7,6 +7,19 @@ import re
 import sys
 import base64
 
+class AuthenticationError(Exception):
+    """Raises an exception when the user is unable to successfully
+    authenticate.
+
+    Attributes:
+        message -- message indicating the specifics of the error
+    """
+
+    def __init__(self,
+            message='Authentication response did not contain a valid SAML assertion'):
+        self.message = message
+        super().__init__(self.message)
+
 class SAMLAssertion:
 
     def __init__(self, username, password, identity_url, auth_type, ssl_verification=True):
@@ -70,7 +83,6 @@ class SAMLAssertion:
         # analyzing the debug print lines above)
         for inputtag in self.__soup.find_all('input'):
             if(inputtag.get('name') == 'SAMLResponse'):
-                #print(inputtag.get('value'))
                 assertion = inputtag.get('value')
                 break
             if('vip' in inputtag.get('name')):
@@ -79,44 +91,57 @@ class SAMLAssertion:
         if (assertion == ''):
             invalid_assertion = True
             if mfa_enabled:
-                self.authenticate_with_mfa()
-                for inputtag in self.__soup.find_all('input'):
-                    if(inputtag.get('name') == 'SAMLResponse'):
-                        assertion = inputtag.get('value')
-                        invalid_assertion = False
-                        break
-            if invalid_assertion:
-                #TODO: Insert valid error checking/handling
-                print('Response did not contain a valid SAML assertion')
-                sys.exit(0)
+                assertion = self.authenticate_with_mfa()
+            else:
+                message = "Authentication attempt did not contain a valid SAML assertion. Please confirm credentials and network connectivity."
+                raise AuthenticationError(message)
         self.assertion = assertion
 
         # Debug only
         # print(base64.b64decode(assertion))
 
     def get_vip_code(self):
-        self.__vipcode = getpass(prompt='Enter your Symantec VIP security code: ')
+        vip_code = getpass(prompt='Enter your Symantec VIP security code: ')
         try:
-            int(self.__vipcode)
+            int(vip_code)
+            return vip_code
         except ValueError as err:
             print('ERROR: Code must be a number. Try again...')
             self.get_vip_code()
 
-    def authenticate_with_mfa(self):
-        self.get_vip_code()
-        payload = {}
+    def authenticate_with_mfa(self, attempt=0):
+        current_attempt = attempt + 1
+        # Attempt to authenticate with MFA up to 3 times
+        if current_attempt <= 3:
+            invalid_assertion = True
+            code = self.get_vip_code()
+            payload = {}
 
-        for inputtag in self.__soup.find_all('input'):
-            name = inputtag.get('name','')
-            value = inputtag.get('value','')
-            # Locate VIP code fields in web form by searching for "[security_]code"
-            if "code" in name.lower():
-                payload[name] = self.__vipcode
+            for inputtag in self.__soup.find_all('input'):
+                name = inputtag.get('name','')
+                value = inputtag.get('value','')
+                # Locate VIP code fields in web form by searching for "[security_]code"
+                if "code" in name.lower():
+                    payload[name] = code
+                else:
+                    # Keep existing value
+                    payload[name] = value
+
+            # Performs the submission of the Symantec VIP code
+            response = self.session.post(
+                self._redirect_url, data=payload, verify=self.ssl_verification)
+            self.__soup = BeautifulSoup(response.text, features="html.parser")
+            for inputtag in self.__soup.find_all('input'):
+                if(inputtag.get('name') == 'SAMLResponse'):
+                    assertion = inputtag.get('value')
+                    invalid_assertion = False
+                    break
+            if invalid_assertion:
+                print("Incorrect code. Try again...")
+                self.authenticate_with_mfa(current_attempt)
             else:
-                # Keep existing value
-                payload[name] = value
-
-        # Performs the submission of the Symantec VIP code
-        response = self.session.post(
-            self._redirect_url, data=payload, verify=self.ssl_verification)
-        self.__soup = BeautifulSoup(response.text, features="html.parser")
+                return assertion
+        else:
+            # Error out if user enters MFA code incorrectly 3 times
+            message = "MFA code entered incorrectly {} times. Aborting...".format(str(attempt))
+            raise AuthenticationError(message)
