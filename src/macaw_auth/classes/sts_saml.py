@@ -3,11 +3,13 @@ import boto3
 import sys
 import xml.etree.ElementTree as ET
 
+from .aws_credentials import AWSCredentials
+
 class AWSSTSService:
 
     def __init__(
             self, saml_assertion=None, account_number=None, idp_name=None, role_name=None, path="/",
-            partition="aws", session_duration=3600, region='us-east-1'):
+            partition="aws", session_duration=3600, region='us-east-1', output_format='json', args=None):
         self.sts = boto3.client('sts', region_name=region)
         empty = ['', None]
         #TODO - Add validation for principal_arn as well
@@ -19,6 +21,16 @@ class AWSSTSService:
         self.duration = session_duration
         self.__credentials = self.assume_role_with_saml(saml_assertion)['Credentials']
         self.split_creds()
+        self.cred_parameters = {
+            "region": (region, False, 'us-east-1'),
+            "output": (output_format, False, 'json'),
+            "aws_access_key_id": (self.__aws_access_key_id, True, ''),
+            "aws_secret_access_key": (self.__aws_secret_access_key, True, ''),
+            "aws_session_token": (self.__aws_session_token, True, ''),
+            "expiration": (self.__expiration, True, '')
+        }
+        self.__aws_creds = AWSCredentials('credential', args['target_profile'],
+                                args['credential_file'], **self.cred_parameters)
 
     def generate_arn(self, partition, account, iam_type, name, path="/"):
         if iam_type == "saml":
@@ -93,10 +105,10 @@ class AWSSTSService:
             self.principal_arn = awsroles[0].split(',')[1]
 
     def split_creds(self):
-        self._aws_access_key_id = self.__credentials['AccessKeyId']
-        self._aws_secret_access_key = self.__credentials['SecretAccessKey']
-        self._aws_session_token = self.__credentials['SessionToken']
-        self._expiration = self.__credentials['Expiration']
+        self.__aws_access_key_id = self.__credentials['AccessKeyId']
+        self.__aws_secret_access_key = self.__credentials['SecretAccessKey']
+        self.__aws_session_token = self.__credentials['SessionToken']
+        self.__expiration = self.__credentials['Expiration']
 
     # TODO - Allow role assumption after login
     # TODO - Add ability to assume role using external ID and MFA
