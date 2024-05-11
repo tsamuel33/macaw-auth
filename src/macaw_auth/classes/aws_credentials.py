@@ -3,8 +3,7 @@ from .configuration import Configuration
 class AWSCredentials(Configuration):
 
     def __init__(self, config_type, target_profile, config_file=None, **config_parameters: tuple):
-        super().__init__(config_type, target_profile, config_file)
-        self.parse_config_parameters(config_parameters)
+        super().__init__(config_type, target_profile, config_file, **config_parameters)
         self.region = self.config[self.config_section]['region']
         self.output = self.config[self.config_section]['output']
         self.set_credential_config()
