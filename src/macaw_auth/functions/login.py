@@ -6,17 +6,7 @@ from ..classes.configuration import Configuration
 from ..classes.idp_connection import SAMLAssertion
 from ..classes.sts_saml import AWSSTSService
 from ..classes.aws_credentials import AWSCredentials
-# from .cli import main as cli_main
 from getpass import getpass
-
-def arg_to_string(arg) -> str:
-    if arg is not None:
-        value = str(arg)
-    else:
-        value = arg
-    return value
-
-#TODO - loop through usage of arg_to_string
 
 def get_username(name: str) -> str:
     print('Please enter your AWS login credentials.')
@@ -45,13 +35,18 @@ def main(args) -> None:
     }
 
     print('Welcome! Checking your configuration files...')
-    client_config = Configuration('user', arg_to_string(args['SOURCE_PROFILE']),
-                           arg_to_string(args['config_file']), **client_parameters)
+    client_config = Configuration('user', args['SOURCE_PROFILE'],
+                           args['config_file'], **client_parameters)
     client = client_config.config[client_config.config_section]
     user = get_username(client['username'])
     validation = UsernameValidation(user, args['username_not_email'])
-    user_creds = UserCredentials(validation.username, client['identity_url'], args['auth_type'], args['no_ssl'], args['reset_password'], client['enable_keyring'])
-    roles = AWSSTSService(user_creds.assertion, client['account_number'], client['idp_name'], client['role_name'], client['path'], client['partition'], int(client['session_duration']), client['region'], client['output'], args)
+    user_creds = UserCredentials(validation.username, client['identity_url'],
+                                args['auth_type'], args['no_ssl'],
+                                args['reset_password'], client['enable_keyring'])
+    roles = AWSSTSService(user_creds.assertion, client['account_number'], client['idp_name'],
+                          client['role_name'], client['path'], client['partition'],
+                          int(client['session_duration']), client['region'],
+                          client['output'], args)
 
 if __name__ == '__main__':
     sys.exit(main())
