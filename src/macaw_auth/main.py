@@ -2,6 +2,7 @@ import argparse
 import sys
 from importlib.metadata import version
 from .functions.login import main as login_func
+from .functions.assume_role import main as assume_role_func
 
 """
 section_name(Source Profile) - position argument
@@ -55,6 +56,15 @@ def setup_login_parser(subparser):
 
 def setup_assumerole_parser(subparser):
     parser = subparser.add_parser('assume-role')
+    parser.add_argument('ROLE', help='Name of the profile containing the assumed role\'s configuration or the ARN of the role to assume')
+    # parser.add_argument(source)
+    # parser.add_argument(target)
+    # parser.add_argument()
+    # parser.add_argument()
+    # parser.add_argument()
+    # parser.add_argument()
+    # parser.add_argument()
+    parser.set_defaults(func=assume_role_func)
     return parser
 
 def setup_web_parser(subparser):
@@ -73,6 +83,14 @@ def setup_ecrlogin_parser(subparser):
     parser = subparser.add_parser('ecr-login')
     return parser
 
+def setup_ssm_parser(subparser):
+    parser = subparser.add_parser('ssm')
+    return parser
+
+def setup_codecommit_parser(subparser):
+    parser = subparser.add_parser('codecommit-login')
+    return parser
+
 def arg_setup():
     parser = setup_main_parser()
     commands = parser.add_subparsers(title='commands', description='Available Commands', help='Valid Commands')
@@ -82,6 +100,8 @@ def arg_setup():
     # timeleft = setup_timeleft_parser(commands)
     # refresh = setup_refresh_parser(commands)
     # ecrlogin = setup_ecrlogin_parser(commands)
+    # ssm = setup_ssm_parser(commands)
+    # codecommitlogin = setup_codecommit_parser(commands)
     args = parser.parse_args()
     # If user does not pass a subcommand, display the help options
     if 'func' in vars(args):
