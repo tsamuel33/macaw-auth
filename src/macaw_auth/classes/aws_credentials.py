@@ -1,4 +1,4 @@
-from .configuration import Configuration
+from macaw_auth.classes.configuration import Configuration
 
 class AWSCredentials(Configuration):
 

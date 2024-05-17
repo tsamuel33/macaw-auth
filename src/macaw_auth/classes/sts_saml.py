@@ -3,7 +3,7 @@ import boto3
 import sys
 import xml.etree.ElementTree as ET
 
-from .aws_credentials import AWSCredentials
+from macaw_auth.classes.aws_credentials import AWSCredentials
 from macaw_auth.functions.common import arn_validation
 
 class AWSSTSService:

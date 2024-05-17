@@ -1,6 +1,6 @@
-from .common import arn_validation
-from ..classes.configuration import Configuration
-from ..classes.sts_saml import AWSSTSService
+from macaw_auth.functions.common import arn_validation
+from macaw_auth.classes.configuration import Configuration
+from macaw_auth.classes.sts_saml import AWSSTSService
 
 def main(args):
     validation = arn_validation(args['ROLE'])

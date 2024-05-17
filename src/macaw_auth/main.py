@@ -1,8 +1,8 @@
 import argparse
 import sys
 from importlib.metadata import version
-from .functions.login import main as login_func
-from .functions.assume_role import main as assume_role_func
+from macaw_auth.functions.login import main as login_func
+from macaw_auth.functions.assume_role import main as assume_role_func
 
 """
 section_name(Source Profile) - position argument
