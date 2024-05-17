@@ -4,6 +4,7 @@ import sys
 import xml.etree.ElementTree as ET
 
 from .aws_credentials import AWSCredentials
+from macaw_auth.functions.common import arn_validation
 
 class AWSSTSService:
 
@@ -19,7 +20,8 @@ class AWSSTSService:
             self.role_arn = self.generate_arn(partition, account_number, "role", role_name, path)
             self.principal_arn = self.generate_arn(partition, account_number, "saml", idp_name)
         self.duration = session_duration
-        self.__credentials = self.assume_role_with_saml(saml_assertion)['Credentials']
+        self.__assume_role_response = self.assume_role_with_saml(saml_assertion)
+        self.__credentials = self.__assume_role_response['Credentials']
         self.split_creds()
         self.cred_parameters = {
             "region": (region, False, 'us-east-1'),
