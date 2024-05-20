@@ -10,10 +10,20 @@ class AWSSTSService:
 
     def __init__(
             self, saml_assertion=None, account_number=None, idp_name=None, role_name=None, path="/",
-            partition="aws", session_duration=3600, region='us-east-1', output_format='json', args=None):
-        self.sts = boto3.client('sts', region_name=region)
-        empty = ['', None]
+            partition="aws", session_duration=3600, region='us-east-1', output_format='json', args=None,
+            action="login", access_key=None, secret_key=None, session_token=None):
+        self.sts = boto3.client('sts', region_name=region, aws_access_key_id=access_key, aws_secret_access_key=secret_key, aws_session_token=session_token)
+        if action == "login":
+            self.login(account_number, idp_name, role_name, saml_assertion, partition,
+                       path, session_duration, region, output_format, args['target_profile'],
+                       args['credential_file'])
+        elif action == "assume_role":
+            pass
+
+    def login(self, account_number, idp_name, role_name, saml_assertion, partition,
+              path, session_duration, region, output_format, target_profile, credential_file):
         #TODO - Add validation for principal_arn as well
+        empty = ['', None]
         if account_number in empty or idp_name in empty or role_name in empty:
             self.get_authorized_roles(saml_assertion)
         else:
@@ -31,8 +41,8 @@ class AWSSTSService:
             "aws_session_token": (self.__aws_session_token, True, ''),
             "expiration": (self.__expiration, True, '')
         }
-        self.__aws_creds = AWSCredentials('credential', args['target_profile'],
-                                args['credential_file'], **self.cred_parameters)
+        self.__aws_creds = AWSCredentials('credential', target_profile,
+                            credential_file, **self.cred_parameters)
 
     def generate_arn(self, partition, account, iam_type, name, path="/"):
         if iam_type == "saml":
@@ -115,8 +125,7 @@ class AWSSTSService:
     # TODO - Allow role assumption after login
     # TODO - Add ability to assume role using external ID and MFA
     def assume_role(self):
-        sts = boto3.client('sts', region_name=None, aws_access_key_id=None, aws_secret_access_key=None, aws_session_token=None)
-        response = sts.assume_role(
+        response = self.sts.assume_role(
             RoleArn='string',
             RoleSessionName='string',
             DurationSeconds=self.duration,
