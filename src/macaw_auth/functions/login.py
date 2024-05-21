@@ -1,12 +1,11 @@
-import platform
-import sys
+from getpass import getpass
+
 from macaw_auth.classes.username_validation import UsernameValidation
 from macaw_auth.classes.user_credentials import UserCredentials
 from macaw_auth.classes.configuration import Configuration
 from macaw_auth.classes.idp_connection import SAMLAssertion
 from macaw_auth.classes.sts_saml import AWSSTSService
 from macaw_auth.classes.aws_credentials import AWSCredentials
-from getpass import getpass
 
 def get_username(name: str) -> str:
     print('Please enter your AWS login credentials.')
@@ -47,11 +46,3 @@ def main(args) -> None:
                           client['role_name'], client['path'], client['partition'],
                           int(client['session_duration']), client['region'],
                           client['output'], args)
-
-if __name__ == '__main__':
-    sys.exit(main())
-
-
-
-    # print('The client is running on the {} platform'.format(platform.system()))
-    # sys.exit(main())
