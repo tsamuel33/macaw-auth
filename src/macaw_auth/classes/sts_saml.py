@@ -18,7 +18,7 @@ class AWSSTSService:
                        path, session_duration, region, output_format, args['target_profile'],
                        args['credential_file'])
         elif action == "assume_role":
-            pass
+            self.assume()
 
     def login(self, account_number, idp_name, role_name, saml_assertion, partition,
               path, session_duration, region, output_format, target_profile, credential_file):
@@ -29,20 +29,22 @@ class AWSSTSService:
         else:
             self.role_arn = self.generate_arn(partition, account_number, "role", role_name, path)
             self.principal_arn = self.generate_arn(partition, account_number, "saml", idp_name)
-        self.duration = session_duration
-        self.__assume_role_response = self.assume_role_with_saml(saml_assertion)
+        self.__assume_role_response = self.assume_role_with_saml(saml_assertion, session_duration)
         self.__credentials = self.__assume_role_response['Credentials']
-        self.split_creds()
-        self.cred_parameters = {
+        cred_parameters = {
             "region": (region, False, 'us-east-1'),
             "output": (output_format, False, 'json'),
-            "aws_access_key_id": (self.__aws_access_key_id, True, ''),
-            "aws_secret_access_key": (self.__aws_secret_access_key, True, ''),
-            "aws_session_token": (self.__aws_session_token, True, ''),
-            "expiration": (self.__expiration, True, '')
+            "aws_access_key_id": (self.__credentials['AccessKeyId'], True, ''),
+            "aws_secret_access_key": (self.__credentials['SecretAccessKey'], True, ''),
+            "aws_session_token": (self.__credentials['SessionToken'], True, ''),
+            "expiration": (self.__credentials['Expiration'], True, '')
         }
         self.__aws_creds = AWSCredentials('credential', target_profile,
-                            credential_file, **self.cred_parameters)
+                            credential_file, **cred_parameters)
+
+    def assume(self, account_number, role_name, session_name, partition, path, duration):
+        self.role_arn = self.generate_arn(partition, account_number, "role", role_name, path)
+        response = self.assume_role(self.role_arn, session_name, duration)
 
     def generate_arn(self, partition, account, iam_type, name, path="/"):
         if iam_type == "saml":
@@ -64,12 +66,12 @@ class AWSSTSService:
 
     #TODO - add error handling if user passes a bad role or principal arn
     #botocore.errorfactory.InvalidIdentityTokenException: An error occurred (InvalidIdentityToken) when calling the AssumeRoleWithSAML operation: SAML Assertion doesn't contain the requested Role and Metadata in the attributes
-    def assume_role_with_saml(self, assertion):
+    def assume_role_with_saml(self, assertion, duration):
         response = self.sts.assume_role_with_saml(
             RoleArn=self.role_arn,
             PrincipalArn=self.principal_arn,
             SAMLAssertion=assertion,
-            DurationSeconds=self.duration
+            DurationSeconds=duration
         )
         return response
 
@@ -116,19 +118,13 @@ class AWSSTSService:
             self.role_arn = awsroles[0].split(',')[0]
             self.principal_arn = awsroles[0].split(',')[1]
 
-    def split_creds(self):
-        self.__aws_access_key_id = self.__credentials['AccessKeyId']
-        self.__aws_secret_access_key = self.__credentials['SecretAccessKey']
-        self.__aws_session_token = self.__credentials['SessionToken']
-        self.__expiration = self.__credentials['Expiration']
-
     # TODO - Allow role assumption after login
     # TODO - Add ability to assume role using external ID and MFA
-    def assume_role(self):
+    def assume_role(self, role_arn, session_name, duration):
         response = self.sts.assume_role(
-            RoleArn='string',
-            RoleSessionName='string',
-            DurationSeconds=self.duration,
+            RoleArn=role_arn,
+            RoleSessionName=session_name,
+            DurationSeconds=duration,
             # ExternalId='string',
             # SerialNumber='string',
             # TokenCode='string'
