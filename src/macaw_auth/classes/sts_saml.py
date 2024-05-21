@@ -8,21 +8,13 @@ from macaw_auth.functions.common import arn_validation
 
 class AWSSTSService:
 
-    def __init__(
-            self, saml_assertion=None, account_number=None, idp_name=None, role_name=None, path="/",
-            partition="aws", session_duration=3600, region='us-east-1', output_format='json', args=None,
-            action="login", access_key=None, secret_key=None, session_token=None):
-        self.sts = boto3.client('sts', region_name=region, aws_access_key_id=access_key, aws_secret_access_key=secret_key, aws_session_token=session_token)
-        if action == "login":
-            self.login(account_number, idp_name, role_name, saml_assertion, partition,
-                       path, session_duration, region, output_format, args['target_profile'],
-                       args['credential_file'])
-        elif action == "assume_role":
-            self.assume()
+    def __init__(self, region="us-east-1", access_key=None, secret_key=None, session_token=None):
+        self.region = region
+        self.sts = boto3.client('sts', region_name=self.region, aws_access_key_id=access_key,
+                                aws_secret_access_key=secret_key, aws_session_token=session_token)
 
-    def login(self, account_number, idp_name, role_name, saml_assertion, partition,
-              path, session_duration, region, output_format, target_profile, credential_file):
-        #TODO - Add validation for principal_arn as well
+    def login(self, account_number, idp_name, role_name, saml_assertion, target_profile, credential_file,
+              partition="aws", path="/", session_duration=3600, output_format="json"):
         empty = ['', None]
         if account_number in empty or idp_name in empty or role_name in empty:
             self.get_authorized_roles(saml_assertion)
@@ -32,7 +24,7 @@ class AWSSTSService:
         self.__assume_role_response = self.assume_role_with_saml(saml_assertion, session_duration)
         self.__credentials = self.__assume_role_response['Credentials']
         cred_parameters = {
-            "region": (region, False, 'us-east-1'),
+            "region": (self.region, False, 'us-east-1'),
             "output": (output_format, False, 'json'),
             "aws_access_key_id": (self.__credentials['AccessKeyId'], True, ''),
             "aws_secret_access_key": (self.__credentials['SecretAccessKey'], True, ''),
@@ -62,6 +54,7 @@ class AWSSTSService:
         else:
             suffix = "/".join((cleaned_path, name))
         arn = "arn:{}:iam::{}:{}/{}".format(partition, account, prefix, suffix)
+        arn_validation(arn, iam_type)
         return arn
 
     #TODO - add error handling if user passes a bad role or principal arn

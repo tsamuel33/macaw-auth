@@ -42,7 +42,8 @@ def main(args) -> None:
     user_creds = UserCredentials(validation.username, client['identity_url'],
                                 args['auth_type'], args['no_ssl'],
                                 args['reset_password'], client['enable_keyring'])
-    roles = AWSSTSService(user_creds.assertion, client['account_number'], client['idp_name'],
-                          client['role_name'], client['path'], client['partition'],
-                          int(client['session_duration']), client['region'],
-                          client['output'], args)
+    sts_service = AWSSTSService(client['region'])
+    sts_service.login(client['account_number'], client['idp_name'], client['role_name'],
+                      user_creds.assertion, args['target_profile'], args['credential_file'],
+                      client['partition'], client['path'], int(client['session_duration']),
+                      client['output'])
