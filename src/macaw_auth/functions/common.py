@@ -1,10 +1,24 @@
+class CommonFunctionError(Exception):
+    """Raises an exception encountering an error while trying
+    to assume a fole.
+
+    Attributes:
+        message -- message indicating the specifics of the error
+    """
+
+    def __init__(self,
+            message='Incorrect configuration. Check your configuration file'):
+        self.message = message
+        super().__init__(self.message)
+
+
 def arn_validation(arn : str, arn_type="role"):
     is_arn = True
     is_valid = True
     message = ""
     if arn_type == "role":
         arn_prefix = "role/"
-    elif arn_type == "idp":
+    elif arn_type == "saml":
         arn_prefix = "saml-provider/"
     arn_split = arn.split(":")
     split_length = len(arn_split)
@@ -30,9 +44,9 @@ def arn_validation(arn : str, arn_type="role"):
         elif not arn_split[5].startswith(arn_prefix):
             is_valid = False
             message = "ARN of type '{}' should have '{}' before the resource path and name".format(arn_type, arn_prefix)
-        elif arn_type == "idp" and len(arn_split[5].split("/")) > 2:
+        elif arn_type == "saml" and len(arn_split[5].split("/")) > 2:
             is_valid = False
-            message = "IdP name should not have '/'. Ensure you have not included a path."
+            message = "SAML provider name should not have '/'. Ensure you have not included a path."
         else:
             account = arn_split[4]
             try:
@@ -44,4 +58,5 @@ def arn_validation(arn : str, arn_type="role"):
                 is_valid = False
                 message = "AWS account number must be a valid number"
                 return (is_arn, is_valid, message)
-    return (is_arn, is_valid, message)
+    if not is_valid:
+        raise CommonFunctionError(message)
