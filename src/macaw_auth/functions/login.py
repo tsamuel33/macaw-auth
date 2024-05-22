@@ -5,7 +5,6 @@ from macaw_auth.classes.user_credentials import UserCredentials
 from macaw_auth.classes.configuration import Configuration
 from macaw_auth.classes.idp_connection import SAMLAssertion
 from macaw_auth.classes.sts_saml import AWSSTSService
-from macaw_auth.classes.aws_credentials import AWSCredentials
 
 def get_username(name: str) -> str:
     print('Please enter your AWS login credentials.')
