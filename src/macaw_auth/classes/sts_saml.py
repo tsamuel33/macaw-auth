@@ -3,7 +3,7 @@ import boto3
 import sys
 import xml.etree.ElementTree as ET
 
-from macaw_auth.classes.aws_credentials import AWSCredentials
+from macaw_auth.classes.configuration import Configuration
 from macaw_auth.functions.common import arn_validation
 
 class AWSSTSService:
@@ -20,7 +20,7 @@ class AWSSTSService:
             self.get_authorized_roles(saml_assertion)
         else:
             self.role_arn = self.generate_arn(partition, account_number, "role", role_name, path)
-            self.principal_arn = self.generate_arn(partition, account_number, "saml", idp_name)
+            self.principal_arn = self.generate_arn(partition, account_number, "saml", idp_name, path)
         self.__assume_role_response = self.assume_role_with_saml(saml_assertion, session_duration)
         self.__credentials = self.__assume_role_response['Credentials']
         cred_parameters = {
@@ -31,8 +31,9 @@ class AWSSTSService:
             "aws_session_token": (self.__credentials['SessionToken'], True, ''),
             "expiration": (self.__credentials['Expiration'], True, '')
         }
-        self.__aws_creds = AWSCredentials('credential', target_profile,
+        self.__aws_creds = Configuration('credential', target_profile,
                             credential_file, **cred_parameters)
+        self.__aws_creds.write_config()
 
     def assume(self, account_number, role_name, session_name, partition, path, duration):
         self.role_arn = self.generate_arn(partition, account_number, "role", role_name, path)
