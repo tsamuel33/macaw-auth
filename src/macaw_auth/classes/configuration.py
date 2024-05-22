@@ -132,3 +132,17 @@ class Configuration:
     def parse_config_parameters(self, parameters : dict):
         for key, value in parameters.items():
             self.set_config_value(key, self.arg_to_string(value[0]), value[1], value[2])
+
+    def write_config(self):
+        # Write the updated config file
+        with open(self.config_path, 'w+') as configfile:
+            self.config.write(configfile)
+
+        # Give the user some basic info as to what has just happened
+        print('\n\n----------------------------------------------------------------')
+        print('Your new access key pair has been stored in the AWS configuration file {0} under the {1} profile.'.format(self.config_path, self.config_section))
+        print('Note that it will expire at {0}.'.format(self.config[self.config_section]['expiration']))
+        print('After this time, you may safely rerun this script to refresh your access key pair.')
+        if self.config_section != 'default':
+            print('To use this credential, call the AWS CLI with the --profile option (e.g. aws --profile {0} ec2 describe-instances).'.format(self.config_section))
+        print('----------------------------------------------------------------\n\n')
