@@ -39,13 +39,14 @@ class AWSSTSService:
         self.role_arn = self.generate_arn(partition, account_number, "role", role_name, path)
         response = self.assume_role(self.role_arn, session_name, duration)
 
-    def generate_arn(self, partition, account, iam_type, name, path="/"):
+    def generate_arn(self, partition, account, iam_type, name, path):
+        default = lambda x, y : "aws" if x == None and y == "partition" else "/" if x == None and y == "path" else x
         if iam_type == "saml":
             prefix = "saml-provider"
             cleaned_path = ""
         elif iam_type == "role":
             prefix = "role"
-            cleaned_path = path
+            cleaned_path = default(path,"path")
             if path.startswith("/"):
                 cleaned_path = cleaned_path[1:len(cleaned_path)]
             if path.endswith("/"):
@@ -54,7 +55,7 @@ class AWSSTSService:
             suffix = name
         else:
             suffix = "/".join((cleaned_path, name))
-        arn = "arn:{}:iam::{}:{}/{}".format(partition, account, prefix, suffix)
+        arn = "arn:{}:iam::{}:{}/{}".format(default(partition,"partition"), account, prefix, suffix)
         arn_validation(arn, iam_type)
         return arn
 
