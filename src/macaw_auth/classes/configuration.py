@@ -38,12 +38,14 @@ class Configuration:
     default_configuration_file = Path.home() / ".aws" / "config"
     default_credentials_file = Path.home() / ".aws" / "credentials"
 
-    def __init__(self, config_type, section_name, config_file=None):
-        self.config_type = config_type
+    def __init__(self, config_type, section_name, config_file=None, **config_parameters):
+        self.config_type = self.arg_to_string(config_type)
         self.config_path = self.select_config_file_path(
             config_type, config_file)
-        self.config_section = self.select_config_section(section_name)
+        self.config_section = self.select_config_section(self.arg_to_string(section_name))
         self.config = self.initialize_config()
+        if len(config_parameters) > 0:
+            self.parse_config_parameters(config_parameters)
 
     # Set the configuration/credential file to use
     def select_config_file_path(self, file_type, file_path):
@@ -98,6 +100,14 @@ class Configuration:
             config.add_section(self.config_section)
         return config
 
+    @staticmethod
+    def arg_to_string(arg):
+        if arg is not None:
+            value = str(arg)
+        else:
+            value = arg
+        return value
+
     def get_config_setting(self, attribute):
         setting = self.config[self.config_section].get(attribute)
         # If value isn't found in profile, check macaw-auth section
@@ -121,4 +131,18 @@ class Configuration:
     
     def parse_config_parameters(self, parameters : dict):
         for key, value in parameters.items():
-            self.set_config_value(key, value[0], value[1], value[2])
+            self.set_config_value(key, self.arg_to_string(value[0]), value[1], value[2])
+
+    def write_config(self):
+        # Write the updated config file
+        with open(self.config_path, 'w+') as configfile:
+            self.config.write(configfile)
+
+        # Give the user some basic info as to what has just happened
+        print('\n\n----------------------------------------------------------------')
+        print('Your new access key pair has been stored in the AWS configuration file {0} under the {1} profile.'.format(self.config_path, self.config_section))
+        print('Note that it will expire at {0}.'.format(self.config[self.config_section]['expiration']))
+        print('After this time, you may safely rerun this script to refresh your access key pair.')
+        if self.config_section != 'default':
+            print('To use this credential, call the AWS CLI with the --profile option (e.g. aws --profile {0} ec2 describe-instances).'.format(self.config_section))
+        print('----------------------------------------------------------------\n\n')

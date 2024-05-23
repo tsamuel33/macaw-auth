@@ -3,30 +3,55 @@ import boto3
 import sys
 import xml.etree.ElementTree as ET
 
+from macaw_auth.classes.configuration import Configuration
+from macaw_auth.functions.common import arn_validation
+
 class AWSSTSService:
 
-    def __init__(
-            self, saml_assertion=None, account_number=None, idp_name=None, role_name=None, path="/",
-            partition="aws", session_duration=3600, region='us-east-1'):
-        self.sts = boto3.client('sts', region_name=region)
+    def __init__(self, region="us-east-1", access_key=None, secret_key=None, session_token=None):
+        self.region = region
+        self.sts = boto3.client('sts', region_name=self.region, aws_access_key_id=access_key,
+                                aws_secret_access_key=secret_key, aws_session_token=session_token)
+
+    def login(self, account_number, idp_name, role_name, saml_assertion, target_profile, credential_file,
+              partition="aws", path="/", session_duration=3600, output_format="json"):
         empty = ['', None]
-        #TODO - Add validation for principal_arn as well
         if account_number in empty or idp_name in empty or role_name in empty:
             self.get_authorized_roles(saml_assertion)
         else:
             self.role_arn = self.generate_arn(partition, account_number, "role", role_name, path)
-            self.principal_arn = self.generate_arn(partition, account_number, "saml", idp_name)
-        self.duration = session_duration
-        self.__credentials = self.assume_role_with_saml(saml_assertion)['Credentials']
-        self.split_creds()
+            self.principal_arn = self.generate_arn(partition, account_number, "saml", idp_name, path)
+        self.__assume_role_response = self.assume_role_with_saml(saml_assertion, session_duration)
+        self.__credentials = self.__assume_role_response['Credentials']
+        cred_parameters = {
+            "region": (self.region, False, 'us-east-1'),
+            "output": (output_format, False, 'json'),
+            "aws_access_key_id": (self.__credentials['AccessKeyId'], True, ''),
+            "aws_secret_access_key": (self.__credentials['SecretAccessKey'], True, ''),
+            "aws_session_token": (self.__credentials['SessionToken'], True, ''),
+            "expiration": (self.__credentials['Expiration'], True, '')
+        }
+        self.__aws_creds = Configuration('credential', target_profile,
+                            credential_file, **cred_parameters)
+        self.__aws_creds.write_config()
 
-    def generate_arn(self, partition, account, iam_type, name, path="/"):
+    def assume(self, account_number, role_name, session_name, partition, path, duration):
+        self.role_arn = self.generate_arn(partition, account_number, "role", role_name, path)
+        response = self.assume_role(self.role_arn, session_name, duration)
+
+    def get_role_session_name(self):
+        response = self.sts.get_caller_identity()
+        session_name = response['UserId'].split(":")[-1]
+        return session_name
+
+    def generate_arn(self, partition, account, iam_type, name, path):
+        default = lambda x, y : "aws" if x == None and y == "partition" else "/" if x == None and y == "path" else x
         if iam_type == "saml":
             prefix = "saml-provider"
             cleaned_path = ""
         elif iam_type == "role":
             prefix = "role"
-            cleaned_path = path
+            cleaned_path = default(path,"path")
             if path.startswith("/"):
                 cleaned_path = cleaned_path[1:len(cleaned_path)]
             if path.endswith("/"):
@@ -35,17 +60,18 @@ class AWSSTSService:
             suffix = name
         else:
             suffix = "/".join((cleaned_path, name))
-        arn = "arn:{}:iam::{}:{}/{}".format(partition, account, prefix, suffix)
+        arn = "arn:{}:iam::{}:{}/{}".format(default(partition,"partition"), account, prefix, suffix)
+        arn_validation(arn, iam_type)
         return arn
 
     #TODO - add error handling if user passes a bad role or principal arn
     #botocore.errorfactory.InvalidIdentityTokenException: An error occurred (InvalidIdentityToken) when calling the AssumeRoleWithSAML operation: SAML Assertion doesn't contain the requested Role and Metadata in the attributes
-    def assume_role_with_saml(self, assertion):
+    def assume_role_with_saml(self, assertion, duration):
         response = self.sts.assume_role_with_saml(
             RoleArn=self.role_arn,
             PrincipalArn=self.principal_arn,
             SAMLAssertion=assertion,
-            DurationSeconds=self.duration
+            DurationSeconds=duration
         )
         return response
 
@@ -92,21 +118,15 @@ class AWSSTSService:
             self.role_arn = awsroles[0].split(',')[0]
             self.principal_arn = awsroles[0].split(',')[1]
 
-    def split_creds(self):
-        self._aws_access_key_id = self.__credentials['AccessKeyId']
-        self._aws_secret_access_key = self.__credentials['SecretAccessKey']
-        self._aws_session_token = self.__credentials['SessionToken']
-        self._expiration = self.__credentials['Expiration']
-
     # TODO - Allow role assumption after login
     # TODO - Add ability to assume role using external ID and MFA
-    def assume_role(self):
-        sts = boto3.client('sts', region_name=None, aws_access_key_id=None, aws_secret_access_key=None, aws_session_token=None)
-        response = sts.assume_role(
-            RoleArn='string',
-            RoleSessionName='string',
-            DurationSeconds=self.duration,
+    def assume_role(self, role_arn, session_name, duration):
+        response = self.sts.assume_role(
+            RoleArn=role_arn,
+            RoleSessionName=session_name,
+            DurationSeconds=duration,
             # ExternalId='string',
             # SerialNumber='string',
             # TokenCode='string'
         )
+        return response

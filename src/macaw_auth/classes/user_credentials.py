@@ -3,7 +3,7 @@
 # dbus-python may not install properly via pip, so may need to disable keyring on linux
 import keyring
 from getpass import getpass
-from .idp_connection import SAMLAssertion
+from macaw_auth.classes.idp_connection import SAMLAssertion
 
 class UserCredentials:
     """
