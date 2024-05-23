@@ -1,9 +1,12 @@
+import json
+import requests
+import sys
+import urllib
 import webbrowser
 
-from macaw_auth.classes.configuration import Configuration
+from time import sleep
 
-import urllib, json, sys
-import requests
+from macaw_auth.classes.configuration import Configuration
 
 
 def main(args):
@@ -36,8 +39,10 @@ def main(args):
     request_parameters += "&SigninToken=" + signin_token["SigninToken"]
     request_url = "https://signin.aws.amazon.com/federation" + request_parameters
 
-    # Open the URL
-    webbrowser.open_new(request_url)
+    # If a user is already logged in to the console, opening the browser with new
+    # credentials will fail. Log out first, then open another window 3 secounds later
+    webbrowser.open_new("https://us-east-1.console.aws.amazon.com/console/logout!doLogout")
+    sleep(3)
+    webbrowser.open_new_tab(request_url)
 
-    #TODO - If you're already logged in, the process doesn't switch over
     #TODO - Troubleshoot why assumed role browser sessions error out
