@@ -16,7 +16,7 @@ def main(args):
 
     # Get sign-in token from AWS federation endpoint
     request_parameters = "?Action=getSigninToken"
-    request_parameters += "&SessionDuration=43200"
+    request_parameters += "&SessionDuration={}".format(str(args['duration_seconds']))
     if sys.version_info[0] < 3:
         def quote_plus_function(s):
             return urllib.quote_plus(s)

@@ -70,6 +70,7 @@ def setup_web_parser(subparser):
     parser = subparser.add_parser('web')
     parser.add_argument('PROFILE', help='Name of the profile containing the credentials to use for AWS console log in', default='default', nargs='?')
     parser.add_argument('--credential-file', help='Path to credential file if ~/.aws/credentials will not be used')
+    parser.add_argument('--duration-seconds', help="Length of time in seconds in which credentials are valid", type=int, default=3600)
     parser.add_argument('-k', '--no-ssl-verify', action='store_false', help='Make insecure SAML request', dest='no_ssl')
     parser.set_defaults(func=web_func)
     return parser
