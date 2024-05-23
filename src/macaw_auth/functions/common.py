@@ -57,7 +57,6 @@ def arn_validation(arn : str, arn_type="role"):
             except ValueError:
                 is_valid = False
                 message = "AWS account number must be a valid number"
-                return (is_arn, is_valid, message)
     if is_valid:
         return (is_valid, is_arn)
     else:
