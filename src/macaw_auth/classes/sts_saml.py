@@ -39,6 +39,11 @@ class AWSSTSService:
         self.role_arn = self.generate_arn(partition, account_number, "role", role_name, path)
         response = self.assume_role(self.role_arn, session_name, duration)
 
+    def get_role_session_name(self):
+        response = self.sts.get_caller_identity()
+        session_name = response['UserId'].split(":")[-1]
+        return session_name
+
     def generate_arn(self, partition, account, iam_type, name, path):
         default = lambda x, y : "aws" if x == None and y == "partition" else "/" if x == None and y == "path" else x
         if iam_type == "saml":
@@ -124,3 +129,4 @@ class AWSSTSService:
             # SerialNumber='string',
             # TokenCode='string'
         )
+        return response
