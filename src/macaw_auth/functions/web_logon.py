@@ -19,7 +19,6 @@ def main(args):
 
     # Get sign-in token from AWS federation endpoint
     request_parameters = "?Action=getSigninToken"
-    request_parameters += "&SessionDuration={}".format(str(args['duration_seconds']))
     if sys.version_info[0] < 3:
         def quote_plus_function(s):
             return urllib.quote_plus(s)
@@ -27,10 +26,19 @@ def main(args):
         def quote_plus_function(s):
             return urllib.parse.quote_plus(s)
     request_parameters += "&Session=" + quote_plus_function(json_string_with_temp_credentials)
+    # When making a request using credentials for an assumed role, including session duration causes a failure
+    request_parameters_no_duration = request_parameters
+    request_parameters += "&SessionDuration={}".format(str(args['duration_seconds']))
     request_url = "https://signin.aws.amazon.com/federation" + request_parameters
     r = requests.get(request_url, verify=args['no_ssl'])
     # Returns a JSON document with a single element named SigninToken.
-    signin_token = json.loads(r.text)
+    try:
+        signin_token = json.loads(r.text)
+    # If request fails, retry without session duration
+    except json.decoder.JSONDecodeError:
+        request_url = "https://signin.aws.amazon.com/federation" + request_parameters_no_duration
+        r = requests.get(request_url, verify=args['no_ssl'])
+        signin_token = json.loads(r.text)
 
     # Generate sign in URL
     request_parameters = "?Action=login" 
@@ -41,8 +49,7 @@ def main(args):
 
     # If a user is already logged in to the console, opening the browser with new
     # credentials will fail. Log out first, then open another window 3 secounds later
+    #TODO - remove hardcoded region in logout URL
     webbrowser.open_new("https://us-east-1.console.aws.amazon.com/console/logout!doLogout")
     sleep(3)
     webbrowser.open_new_tab(request_url)
-
-    #TODO - Troubleshoot why assumed role browser sessions error out
