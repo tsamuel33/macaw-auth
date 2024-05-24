@@ -3,6 +3,7 @@ import sys
 from importlib.metadata import version
 from macaw_auth.functions.login import main as login_func
 from macaw_auth.functions.assume_role import main as assume_role_func
+from macaw_auth.functions.web_logon import main as web_func
 
 """
 section_name(Source Profile) - position argument
@@ -67,6 +68,11 @@ def setup_assumerole_parser(subparser):
 
 def setup_web_parser(subparser):
     parser = subparser.add_parser('web')
+    parser.add_argument('PROFILE', help='Name of the profile containing the credentials to use for AWS console log in', default='default', nargs='?')
+    parser.add_argument('--credential-file', help='Path to credential file if ~/.aws/credentials will not be used')
+    parser.add_argument('--duration-seconds', help="Length of time in seconds in which credentials are valid", type=int, default=3600)
+    parser.add_argument('-k', '--no-ssl-verify', action='store_false', help='Make insecure SAML request', dest='no_ssl')
+    parser.set_defaults(func=web_func)
     return parser
 
 def setup_timeleft_parser(subparser):
@@ -94,7 +100,7 @@ def arg_setup():
     commands = parser.add_subparsers(title='commands', description='Available Commands', help='Valid Commands')
     login = setup_login_parser(commands)
     assumerole = setup_assumerole_parser(commands)
-    # web = setup_web_parser(commands)
+    web = setup_web_parser(commands)
     # timeleft = setup_timeleft_parser(commands)
     # refresh = setup_refresh_parser(commands)
     # ecrlogin = setup_ecrlogin_parser(commands)
