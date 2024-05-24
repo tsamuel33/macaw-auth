@@ -49,7 +49,16 @@ def main(args):
 
     # If a user is already logged in to the console, opening the browser with new
     # credentials will fail. Log out first, then open another window 3 secounds later
-    #TODO - remove hardcoded region in logout URL
-    webbrowser.open_new("https://us-east-1.console.aws.amazon.com/console/logout!doLogout")
+    
+    # Set logout region
+    if args["region"] is not None:
+        region = args["region"]
+    else:
+        region = credentials.get_config_setting("region")
+    # Default to us-east-1 if no region is provided.
+    if region is None:
+        region = "us-east-1"
+    # Log out of console to ensure credentials are cleared before logging in
+    webbrowser.open_new("https://{}.console.aws.amazon.com/console/logout!doLogout".format(region))
     sleep(3)
     webbrowser.open_new_tab(request_url)
