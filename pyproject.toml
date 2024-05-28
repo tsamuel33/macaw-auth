@@ -4,11 +4,9 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "macaw-auth"
-version = "1.2.0"
+version = "2.0.0"
 description = "Utility to authenticate to AWS Services via CLI using ADFS"
 readme = "README.md"
-# keywords = []
-# license
 authors = [
     { name="Travis Samuel", email="tsamuel@alum.mit.edu" },
 ]
