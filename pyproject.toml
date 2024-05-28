@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "macaw-auth"
-version = "2.0.0"
+version = "2.0.1"
 description = "Utility to authenticate to AWS Services via CLI using ADFS"
 readme = "README.md"
 authors = [
@@ -34,7 +34,7 @@ macaw-auth = "macaw_auth.main:main"
 [tool.setuptools]
 include-package-data = true
 
-[tools.setuptools.packages.find]
+[tool.setuptools.packages.find]
 where = ["src"]
 include = ["macaw_auth*"]
 namespaces = false
