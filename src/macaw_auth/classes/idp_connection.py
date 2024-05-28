@@ -137,11 +137,11 @@ class SAMLAssertion:
                     invalid_assertion = False
                     break
             if invalid_assertion:
-                print("Incorrect code. Try again...")
+                print("Incorrect code. Try again... (Strike {}!)".format(str(current_attempt)))
                 self.authenticate_with_mfa(current_attempt)
             else:
                 return assertion
         else:
             # Error out if user enters MFA code incorrectly 3 times
-            message = "MFA code entered incorrectly {} times. Aborting...".format(str(attempt))
+            message = "Sorry, you struck out. Aborting login...".format(str(attempt))
             raise AuthenticationError(message)
