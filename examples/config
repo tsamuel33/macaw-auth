@@ -2,10 +2,13 @@
 session_duration = 3600
 identity_url = https://<ADFS_URL>/adfs/ls/idpinitiatedsignon.htm?loginToRp=urn:amazon:webservices
 username = <EMAIL>@<DOMAIN>.<SUFFIX>
+idp_name = <IAM_SAML_PROVIDER_NAME>
 enable_keyring = True
 region = us-east-1
-
+path = /
+partition = aws
 
 [profile example-profile]
-role_arn = arn:aws:iam::123456789012:role/<ROLE_NAME>
-principal_arn = arn:aws:iam::123456789012:saml-provider/<IAM_SAML_PROVIDER_NAME>
+account_number = 123456789012:role/
+role_name = <ROLE_NAME>
+path = /samplepath/
