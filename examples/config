@@ -9,6 +9,6 @@ path = /
 partition = aws
 
 [profile example-profile]
-account_number = 123456789012:role/
+account_number = 123456789012
 role_name = <ROLE_NAME>
 path = /samplepath/
