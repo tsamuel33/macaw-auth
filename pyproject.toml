@@ -33,6 +33,7 @@ macaw-auth = "macaw_auth.main:main"
 
 [tool.setuptools]
 include-package-data = true
+license-files = []
 
 [tool.setuptools.packages.find]
 where = ["src"]
