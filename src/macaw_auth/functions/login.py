@@ -29,7 +29,7 @@ def main(args) -> None:
         "output": (args['output'], False, 'json'),
         "connection_type": (args['auth_type'], False, 'web_form'),
         "path": (args['path'], False, '/'),
-        "partition": (args['partition'], False, 'aws')
+        "partition": (args['partition'], False, 'aws'),
     }
 
     print('Welcome! Checking your configuration files...')
@@ -41,7 +41,7 @@ def main(args) -> None:
     user_creds = UserCredentials(validation.username, client['identity_url'],
                                 args['auth_type'], args['no_ssl'],
                                 args['reset_password'], client['enable_keyring'])
-    sts_service = AWSSTSService(client['region'])
+    sts_service = AWSSTSService(client['region'],verify_ssl=args['no_ssl'])
     sts_service.login(client['account_number'], client['idp_name'], client['role_name'],
                       user_creds.assertion, args['target_profile'], args['credential_file'],
                       client['partition'], client['path'], int(client['session_duration']),

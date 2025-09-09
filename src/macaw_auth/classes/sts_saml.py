@@ -8,10 +8,12 @@ from macaw_auth.functions.common import arn_validation
 
 class AWSSTSService:
 
-    def __init__(self, region="us-east-1", access_key=None, secret_key=None, session_token=None):
+    def __init__(self, region="us-east-1", access_key=None, secret_key=None, session_token=None,
+                 verify_ssl=True):
         self.region = region
         self.sts = boto3.client('sts', region_name=self.region, aws_access_key_id=access_key,
-                                aws_secret_access_key=secret_key, aws_session_token=session_token)
+                                aws_secret_access_key=secret_key, aws_session_token=session_token,
+                                verify=verify_ssl)
 
     def login(self, account_number, idp_name, role_name, saml_assertion, target_profile, credential_file,
               partition="aws", path="/", session_duration=3600, output_format="json"):
