@@ -8,10 +8,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Install Build Tools
         run: |
           pip install --upgrade build twine
+          pip install -U packaging
       - name: Publish Package
         run: |
           python -m build
