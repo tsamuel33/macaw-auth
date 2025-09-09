@@ -5,6 +5,10 @@ from macaw_auth.functions.login import main as login_func
 from macaw_auth.functions.assume_role import main as assume_role_func
 from macaw_auth.functions.web_logon import main as web_func
 
+# Suppress SSL warnings if ssl_verfication flags are set to False
+import requests
+requests.packages.urllib3.disable_warnings()
+
 """
 section_name(Source Profile) - position argument
 
