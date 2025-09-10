@@ -13,9 +13,10 @@ authors = [
 requires-python = ">3.7"
 classifiers = [
     "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
+license = "MIT"
+license-files = ["LICENSE"]
 dependencies = [
     "requests",
     "requests_ntlm",
@@ -33,7 +34,6 @@ macaw-auth = "macaw_auth.main:main"
 
 [tool.setuptools]
 include-package-data = true
-license-files = []
 
 [tool.setuptools.packages.find]
 where = ["src"]
