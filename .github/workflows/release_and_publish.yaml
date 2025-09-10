@@ -25,4 +25,5 @@ jobs:
       - name: Publish Package
         run: |
           python -m build
+          pip install -U packaging
           twine upload -u __token__ -p ${{ secrets.PYPI_API_TOKEN }} dist/*
