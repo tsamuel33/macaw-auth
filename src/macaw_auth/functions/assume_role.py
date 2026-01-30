@@ -13,7 +13,8 @@ def main(args):
     sts_service = AWSSTSService(source_creds.get_config_setting("region"),
                                 source_creds.get_config_setting("aws_access_key_id"),
                                 source_creds.get_config_setting("aws_secret_access_key"),
-                                source_creds.get_config_setting("aws_session_token"))
+                                source_creds.get_config_setting("aws_session_token"),
+                                args['no_ssl'])
     validation = arn_validation(args['ROLE'])
     if validation[0]:
         if validation[1]:
