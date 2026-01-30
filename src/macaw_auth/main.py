@@ -60,7 +60,7 @@ def setup_login_parser(subparser):
     return parser
 
 def setup_assumerole_parser(subparser):
-    parser = subparser.add_parser('assume-role')
+    parser = subparser.add_parser('assume-role', aliases=['ar'])
     parser.add_argument('ROLE', help='Name of the profile containing the assumed role\'s configuration or the ARN of the role to assume')
     parser.add_argument('--config-file', help='Path to config file if ~/.aws/config will not be used')
     parser.add_argument('--credential-file', help='Path to credential file if ~/.aws/credentials will not be used')
