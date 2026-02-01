@@ -69,30 +69,20 @@ class UsernameValidation:
             domain = ""
         return prefix, user_type, domain
 
-    # Helper function to remove specified valid symbols from a string
-    # and test if the resulting string is alphanumeric.
-    def strip_valid_symbols(self, test_string):
-        output = test_string
-        for symbol in self.valid_symbol_list:
-            output = output.replace(symbol, '')
-        output_alphanum = output.isalnum()
-        return output, output_alphanum
-
-    # Check if username has invalid symbols
     def check_invalid_symbols(self):
-        stripped_prefix = self.strip_valid_symbols(self._prefix)
-        if not stripped_prefix[1]:
+        """
+        Tests a username to ensure that all characters are alphanumeric
+        after valid special characters are removed
+        """
+
+        clean_username = self.username
+        for symbol in self.valid_symbol_list:
+            clean_username = clean_username.replace(symbol, '')
+        if not clean_username.isalnum():
             message = "Provided username contains invalid symbol(s)." \
                       " Provided username can only contain" \
                       f"{self._symbols_string}"
             raise InvalidUsernameError(message)
-        elif self.username_is_email:
-            stripped_domain = self.strip_valid_symbols(self._domain)
-            if not stripped_domain[1]:
-                message = "The domain of the email address contains " \
-                          "invalid symbol(s). Provided username can " \
-                          f"only contain {self._symbols_string}"
-                raise InvalidUsernameError(message)
 
     # Ensure provided email address has a single @ symbol
     def check_single_at(self):
