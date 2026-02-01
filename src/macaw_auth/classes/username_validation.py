@@ -1,8 +1,9 @@
 class InvalidUsernameError(Exception):
-    """Raises an exception when an invalid username is entered
+    """
+    Raises an exception when an invalid username is entered
 
     Attributes:
-        message -- message indicating the specifics of the error
+        message (str): Message indicating the specifics of the error
     """
 
     def __init__(self, message='Invalid user name entered'):
@@ -11,20 +12,15 @@ class InvalidUsernameError(Exception):
 
 class UsernameValidation:
     """
-    A class to check the validity of a provided username
+    Checks the validity of a provided username
 
-    ...
-
-    Attributes
-    ----------
-    username : str
-        username for validation
-    username_is_email : bool
-        determines if the username is expected to be an email address
-    symbol_list : list
-        list of valid symbols that can be included in username
-    validity : bool
-        boolean stating if provided username is valid
+    Attributes:
+        username (str): Username for validation
+        username_is_email (bool): Determines if the username is
+            expected to be an email address
+        symbol_list (list): List of valid symbols that can be included
+            in username
+        validity (bool): Boolean stating if provided username is valid
     """
 
     # Class variables
@@ -42,7 +38,7 @@ class UsernameValidation:
             self.symbol_list = self.valid_iam_user_symbols
             self._prefix = self.username
             self._domain = ""
-        self.symbols_string = ', '.join(self.symbol_list)
+        self._symbols_string = ', '.join(self.symbol_list)
         # Assume username is valid and set to invalid based on checks
         self.validity = True
         self.check_all()
@@ -73,7 +69,7 @@ class UsernameValidation:
             self.validity = False
             message = "Provided username contains invalid symbol(s)." \
                       " Provided username can only contain" \
-                      f"{self.symbols_string}"
+                      f"{self._symbols_string}"
             raise InvalidUsernameError(message)
         elif self.username_is_email:
             stripped_domain = self.strip_valid_symbols(self._domain)
@@ -81,7 +77,7 @@ class UsernameValidation:
                 self.validity = False
                 message = "The domain of the email address contains " \
                           "invalid symbol(s). Provided username can " \
-                          f"only contain {self.symbols_string}"
+                          f"only contain {self._symbols_string}"
                 raise InvalidUsernameError(message)
 
     # Ensure provided email address has a single @ symbol
