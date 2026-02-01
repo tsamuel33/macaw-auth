@@ -42,6 +42,7 @@ class UsernameValidation:
             self.symbol_list = self.valid_iam_user_symbols
             self._prefix = self.username
             self._domain = ""
+        self.symbols_string = ', '.join(self.symbol_list)
         # Assume username is valid and set to invalid based on checks
         self.validity = True
         self.check_all()
@@ -56,8 +57,8 @@ class UsernameValidation:
             domain = ""
         return prefix, domain
 
-    # Helper function to remove specified valid symbols from a string and test
-    # if the resulting string is alphanumeric.
+    # Helper function to remove specified valid symbols from a string
+    # and test if the resulting string is alphanumeric.
     def strip_valid_symbols(self, test_string):
         output = test_string
         for symbol in self.symbol_list:
@@ -70,17 +71,17 @@ class UsernameValidation:
         stripped_prefix = self.strip_valid_symbols(self._prefix)
         if not stripped_prefix[1]:
             self.validity = False
-            message = "Provided username contains invalid symbol(s). " + \
-                "Provided username can only contain {}".format(
-                    ', '.join(self.symbol_list))
+            message = "Provided username contains invalid symbol(s)." \
+                      " Provided username can only contain" \
+                      f"{self.symbols_string}"
             raise InvalidUsernameError(message)
         elif self.username_is_email:
             stripped_domain = self.strip_valid_symbols(self._domain)
             if not stripped_domain[1]:
                 self.validity = False
-                message = "The domain of the email address contains " + \
-                    "invalid symbol(s). Provided username can only " + \
-                    "contain {}".format(', '.join(self.symbol_list))
+                message = "The domain of the email address contains " \
+                          "invalid symbol(s). Provided username can " \
+                          f"only contain {self.symbols_string}"
                 raise InvalidUsernameError(message)
 
     # Ensure provided email address has a single @ symbol
@@ -89,16 +90,16 @@ class UsernameValidation:
             at_count = self.username.count("@")
             if at_count != 1:
                 self.validity = False
-                message = "User name should contain a single '@' symbol. " + \
-                    "Provided name has {}.".format(at_count)
+                message = "User name should contain a single '@' " \
+                          f"symbol. Provided name has {at_count}."
                 raise InvalidUsernameError(message)
     
     # Check if prefix or domain starts with a number or letter
     def starts_alphanumeric(self, test_string, string_type):
         if not test_string[0].isalnum():
             self.validity = False
-            message = "{} does not start with an ".format(string_type) + \
-                "alphanumeric character"
+            message = f"{string_type} does not start with an " \
+                      "alphanumeric character"
             raise InvalidUsernameError(message)
 
     # Check if prefix or domain ends with a number or letter
@@ -106,7 +107,7 @@ class UsernameValidation:
         string_length = len(test_string)
         if not test_string[string_length-1].isalnum():
             self.validity = False
-            message = "{} does not end with an ".format(string_type) + \
+            message = f"{string_type} does not end with an " \
                 "alphanumeric character"
             raise InvalidUsernameError(message)
 
@@ -119,7 +120,8 @@ class UsernameValidation:
                 if not test_string[x].isalnum():
                     if not test_string[x+1].isalnum():
                         self.validity = False
-                        message = "Username contains consecutive symbols"
+                        message = "Username contains consecutive " \
+                                  "symbols"
                         raise InvalidUsernameError(message)
 
     # Check if domain ends in at least 2 characters
@@ -129,7 +131,8 @@ class UsernameValidation:
             parts_length = len(domain_parts)
             if parts_length < 2:
                 self.validity = False
-                message = "Domain contains less than 2 parts separated by '.'"
+                message = "Domain contains less than 2 parts " \
+                          "separated by '.'"
                 raise InvalidUsernameError(message)
             else:
                 domain_end = domain_parts[parts_length-1]
