@@ -16,45 +16,64 @@ class UsernameValidation:
 
     Attributes:
         username (str): Username for validation
-        username_is_email (bool): Determines if the username is
-            expected to be an email address
-        symbol_list (list): List of valid symbols that can be included
-            in username
+        username_prefix (str): The prefix of the user's email (if
+            applicable)
+        username_type (str): The type of user (Email or IAM)
+        user_domain (str): The user's email domain (if applicable)
+        valid_symbol_list (list): List of valid symbols that can be
+            included in username
     """
 
-    # Class variables
+    # Class attributes
     valid_email_symbols = ['_', '-', '.', '@', '+']
     valid_iam_user_symbols = ['+', '=', ',', '.', '@', '_', '-']
 
-    def __init__(self, username: str, username_is_email: bool = True):
+    def __init__(self, username: str):
+        """
+        Constructs the attributes of the UsernameValidation object
+        
+        Parameters:
+            username (str): Username for validation
+        """
+
         self.username = username
-        self.username_is_email = username_is_email
-        if self.username_is_email:
-            self.symbol_list = self.valid_email_symbols
-            self._prefix = self.split_username()[0]
-            self._domain = self.split_username()[1]
+        self._user_attributes = self.split_username()
+        self.username_prefix = self._user_attributes[0]
+        self.username_type = self._user_attributes[1]
+        self.user_domain = self._user_attributes[2]
+        if self.username_type == "email":
+            self.valid_symbol_list = self.valid_email_symbols
         else:
-            self.symbol_list = self.valid_iam_user_symbols
-            self._prefix = self.username
-            self._domain = ""
-        self._symbols_string = ', '.join(self.symbol_list)
+            self.valid_symbol_list = self.valid_iam_user_symbols
+        self._symbols_string = ', '.join(self.valid_symbol_list)
         self.check_all()
 
-    # Split username into prefix and domain(only applies to email)
     def split_username(self):
+        """
+        Determines username type and splits into prefix and domain if
+        username is an email address
+        
+        Returns:
+            prefix (str): The first part of the username
+            user_type (str): The type of username
+            domain (str): The domain of the user if an email address
+        """
+
+        user_type = "iam"
         username_parts = self.username.split('@')
         prefix = username_parts[0]
         if len(username_parts) == 2:
             domain = username_parts[1]
+            user_type = "email"
         else:
             domain = ""
-        return prefix, domain
+        return prefix, user_type, domain
 
     # Helper function to remove specified valid symbols from a string
     # and test if the resulting string is alphanumeric.
     def strip_valid_symbols(self, test_string):
         output = test_string
-        for symbol in self.symbol_list:
+        for symbol in self.valid_symbol_list:
             output = output.replace(symbol, '')
         output_alphanum = output.isalnum()
         return output, output_alphanum
