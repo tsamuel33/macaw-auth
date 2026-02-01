@@ -20,7 +20,6 @@ class UsernameValidation:
             expected to be an email address
         symbol_list (list): List of valid symbols that can be included
             in username
-        validity (bool): Boolean stating if provided username is valid
     """
 
     # Class variables
@@ -39,8 +38,6 @@ class UsernameValidation:
             self._prefix = self.username
             self._domain = ""
         self._symbols_string = ', '.join(self.symbol_list)
-        # Assume username is valid and set to invalid based on checks
-        self.validity = True
         self.check_all()
 
     # Split username into prefix and domain(only applies to email)
@@ -66,7 +63,6 @@ class UsernameValidation:
     def check_invalid_symbols(self):
         stripped_prefix = self.strip_valid_symbols(self._prefix)
         if not stripped_prefix[1]:
-            self.validity = False
             message = "Provided username contains invalid symbol(s)." \
                       " Provided username can only contain" \
                       f"{self._symbols_string}"
@@ -74,7 +70,6 @@ class UsernameValidation:
         elif self.username_is_email:
             stripped_domain = self.strip_valid_symbols(self._domain)
             if not stripped_domain[1]:
-                self.validity = False
                 message = "The domain of the email address contains " \
                           "invalid symbol(s). Provided username can " \
                           f"only contain {self._symbols_string}"
@@ -85,7 +80,6 @@ class UsernameValidation:
         if self.username_is_email:
             at_count = self.username.count("@")
             if at_count != 1:
-                self.validity = False
                 message = "User name should contain a single '@' " \
                           f"symbol. Provided name has {at_count}."
                 raise InvalidUsernameError(message)
@@ -93,7 +87,6 @@ class UsernameValidation:
     # Check if prefix or domain starts with a number or letter
     def starts_alphanumeric(self, test_string, string_type):
         if not test_string[0].isalnum():
-            self.validity = False
             message = f"{string_type} does not start with an " \
                       "alphanumeric character"
             raise InvalidUsernameError(message)
@@ -102,7 +95,6 @@ class UsernameValidation:
     def ends_alphanumeric(self, test_string, string_type):
         string_length = len(test_string)
         if not test_string[string_length-1].isalnum():
-            self.validity = False
             message = f"{string_type} does not end with an " \
                 "alphanumeric character"
             raise InvalidUsernameError(message)
@@ -115,7 +107,6 @@ class UsernameValidation:
             for x in range(string_length-1):
                 if not test_string[x].isalnum():
                     if not test_string[x+1].isalnum():
-                        self.validity = False
                         message = "Username contains consecutive " \
                                   "symbols"
                         raise InvalidUsernameError(message)
@@ -126,7 +117,6 @@ class UsernameValidation:
             domain_parts = self._domain.split('.')
             parts_length = len(domain_parts)
             if parts_length < 2:
-                self.validity = False
                 message = "Domain contains less than 2 parts " \
                           "separated by '.'"
                 raise InvalidUsernameError(message)
@@ -134,11 +124,9 @@ class UsernameValidation:
                 domain_end = domain_parts[parts_length-1]
                 domain_end_length = len(domain_end)
                 if not domain_end.isalnum():
-                    self.validity = False
                     message = "Domain ending is not alphanumeric"
                     raise InvalidUsernameError(message)
                 elif domain_end_length < 2:
-                    self.validity = False
                     message = "Domain ends with less than 2 characters"
                     raise InvalidUsernameError(message)
     
