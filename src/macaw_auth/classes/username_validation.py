@@ -173,11 +173,11 @@ class UsernameValidation:
 
         self.check_single_at()
         self.check_invalid_symbols()
-        self.starts_alphanumeric(self._prefix, "Username")
-        self.ends_alphanumeric(self._prefix, "Username")
-        self.is_next_alphanum(self._prefix)
+        self.starts_alphanumeric(self.username_prefix, "Username")
+        self.ends_alphanumeric(self.username_prefix, "Username")
+        self.is_next_alphanum(self.username_prefix)
         if self.username_type == "email":
-            self.starts_alphanumeric(self._domain, "Domain")
-            self.ends_alphanumeric(self._domain, "Domain")
-            self.is_next_alphanum(self._domain)
+            self.starts_alphanumeric(self.user_domain, "Domain")
+            self.ends_alphanumeric(self.user_domain, "Domain")
+            self.is_next_alphanum(self.user_domain)
             self.check_domain_end()
