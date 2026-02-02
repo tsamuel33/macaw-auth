@@ -7,21 +7,20 @@ class TestUsernameValidation:
     @staticmethod
     def validate_user(
             username : str,
-            is_email : bool = True, # Most tests are email addresses
             expected_result : bool = False # Most tests are exceptions
             ) -> None:
-        user = UsernameValidation(username, is_email)
+        user = UsernameValidation(username)
         if expected_result:
             assert user.validity
         elif not expected_result:
             assert not user.validity
 
-    def expect_valid_result(self, username : str, is_email : bool = True) -> None:
-        self.validate_user(username, is_email, expected_result=True)
+    def expect_valid_result(self, username : str,) -> None:
+        self.validate_user(username, expected_result=True)
 
-    def expect_exception(self, username : str, is_email : bool, exception_regex : str) -> None:
+    def expect_exception(self, username : str, exception_regex : str) -> None:
         with pytest.raises(InvalidUsernameError, match=exception_regex):
-            self.validate_user(username, is_email, expected_result=False)
+            self.validate_user(username, expected_result=False)
 
     # Email Tests
     def test_valid_email(self):
@@ -51,9 +50,9 @@ class TestUsernameValidation:
     def test_invalid_email_short_domain(self):
         self.expect_exception("short@xy.z", True, "less than 2")
 
-    # # User Tests
+    # User Tests
     def test_valid_user(self):
-        self.expect_valid_result("fakeusername", is_email=False)
+        self.expect_valid_result("fakeusername")
 
     def test_invalid_user_invalid_symbol(self):
         self.expect_exception("user1!", False, "contains invalid symbol")
