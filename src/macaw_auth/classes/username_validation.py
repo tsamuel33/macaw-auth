@@ -24,7 +24,6 @@ class UsernameValidation:
             included in username
     """
 
-    # Class attributes
     valid_email_symbols = ['_', '-', '.', '@', '+']
     valid_iam_user_symbols = ['+', '=', ',', '.', '@', '_', '-']
 
@@ -32,7 +31,7 @@ class UsernameValidation:
         """
         Constructs the attributes of the UsernameValidation object
         
-        Parameters:
+        Arguments:
             username (str): Username for validation
         """
 
@@ -84,45 +83,72 @@ class UsernameValidation:
                       f"{self._symbols_string}"
             raise InvalidUsernameError(message)
 
-    # Ensure provided email address has a single @ symbol
     def check_single_at(self):
-        if self.username_is_email:
+        """
+        Validates that email address only contains a single '@' symbol
+        """
+
+        if self.username_type == "email":
             at_count = self.username.count("@")
             if at_count != 1:
                 message = "User name should contain a single '@' " \
                           f"symbol. Provided name has {at_count}."
                 raise InvalidUsernameError(message)
     
-    # Check if prefix or domain starts with a number or letter
-    def starts_alphanumeric(self, test_string, string_type):
-        if not test_string[0].isalnum():
-            message = f"{string_type} does not start with an " \
+    def starts_alphanumeric(self, entry : str, entry_type : str):
+        """
+        Tests if provided string begins with an alphanumeric character
+        
+        Arguments:
+            entry (str): The string to test
+            entry_type (str): The type of string (Username or Domain)
+        """
+
+        if not entry[0].isalnum():
+            message = f"{entry_type} does not start with an " \
                       "alphanumeric character"
             raise InvalidUsernameError(message)
 
-    # Check if prefix or domain ends with a number or letter
-    def ends_alphanumeric(self, test_string, string_type):
-        string_length = len(test_string)
-        if not test_string[string_length-1].isalnum():
-            message = f"{string_type} does not end with an " \
+    def ends_alphanumeric(self, entry : str, entry_type :  str):
+        """
+        Tests if provided string ends with an alphanumeric character
+        
+        Arguments:
+            entry (str): The string to test
+            entry_type (str): The type of string (Username or Domain)
+        """
+
+        string_length = len(entry)
+        if not entry[string_length-1].isalnum():
+            message = f"{entry_type} does not end with an " \
                 "alphanumeric character"
             raise InvalidUsernameError(message)
 
-    # Check if valid symbols are followed by number or letter
-    # Does not check last character as that would cause index error
-    def is_next_alphanum(self, test_string):
-        if not test_string.isalnum():
-            string_length = len(test_string)
+    def is_next_alphanum(self, entry : str):
+        """
+        Test to ensure that username does not contain consecutive
+        symbols
+
+        Arguments:
+            entry (str): The string to test
+        """
+
+        if not entry.isalnum():
+            string_length = len(entry)
             for x in range(string_length-1):
-                if not test_string[x].isalnum():
-                    if not test_string[x+1].isalnum():
+                if not entry[x].isalnum():
+                    if not entry[x+1].isalnum():
                         message = "Username contains consecutive " \
                                   "symbols"
                         raise InvalidUsernameError(message)
 
-    # Check if domain ends in at least 2 characters
     def check_domain_end(self):
-        if self.username_is_email:
+        """
+        Tests if username's domain ends in at least 2 characters if the
+        username is an email address
+        """
+
+        if self.username_type == "email":
             domain_parts = self._domain.split('.')
             parts_length = len(domain_parts)
             if parts_length < 2:
@@ -139,14 +165,18 @@ class UsernameValidation:
                     message = "Domain ends with less than 2 characters"
                     raise InvalidUsernameError(message)
     
-    # Run all username validation checks
     def check_all(self):
+        """
+        Runs all defined validation methods to ensure that the username
+        is valid
+        """
+
         self.check_single_at()
         self.check_invalid_symbols()
         self.starts_alphanumeric(self._prefix, "Username")
         self.ends_alphanumeric(self._prefix, "Username")
         self.is_next_alphanum(self._prefix)
-        if self.username_is_email:
+        if self.username_type == "email":
             self.starts_alphanumeric(self._domain, "Domain")
             self.ends_alphanumeric(self._domain, "Domain")
             self.is_next_alphanum(self._domain)
