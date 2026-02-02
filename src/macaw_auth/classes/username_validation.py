@@ -149,7 +149,7 @@ class UsernameValidation:
         """
 
         if self.username_type == "email":
-            domain_parts = self._domain.split('.')
+            domain_parts = self.user_domain.split('.')
             parts_length = len(domain_parts)
             if parts_length < 2:
                 message = "Domain contains less than 2 parts " \
