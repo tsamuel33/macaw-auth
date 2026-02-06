@@ -10,16 +10,15 @@ class TestUsernameValidation:
             expect_pass : bool = True,
             error_regex : str = None
             ) -> None:
-        with pytest.raises(InvalidUsernameError, match=error_regex):
+        if not expect_pass:
+            with pytest.raises(InvalidUsernameError, match=error_regex):
+                UsernameValidation(username)
+        else:
             try:
                 UsernameValidation(username)
-                if not expect_pass:
-                    pytest.fail("Expected InvalidUsernameError was not"
-                                " raised")
             except InvalidUsernameError as e:
-                if expect_pass:
-                    pytest.fail("Unexpected InvalidUsernameError "
-                                f"raised: {e.message}")
+                pytest.fail("Unexpected InvalidUsernameError "
+                            f"raised: {e.message}")
 
     # Email Tests
     def test_valid_email(self):
@@ -58,7 +57,7 @@ class TestUsernameValidation:
 
     # User Tests
     def test_valid_user(self):
-        self.expect_valid_result("fakeusername")
+        self.validate_user("fakeusername")
 
     def test_invalid_user_invalid_symbol(self):
         self.validate_user("user1!", False, "contains invalid symbol")
