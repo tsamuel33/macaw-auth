@@ -37,7 +37,7 @@ def main(args) -> None:
                            args['config_file'], **client_parameters)
     client = client_config.config[client_config.config_section]
     user = get_username(client['username'])
-    validation = UsernameValidation(user, args['username_not_email'])
+    validation = UsernameValidation(user)
     user_creds = UserCredentials(validation.username, client['identity_url'],
                                 args['auth_type'], args['no_ssl'],
                                 args['reset_password'], client['enable_keyring'])
