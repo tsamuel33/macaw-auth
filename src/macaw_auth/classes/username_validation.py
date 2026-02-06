@@ -1,8 +1,11 @@
+import re
+
 class InvalidUsernameError(Exception):
-    """Raises an exception when an invalid username is entered
+    """
+    Raises an exception when an invalid username is entered
 
     Attributes:
-        message -- message indicating the specifics of the error
+        message (str): Message indicating the specifics of the error
     """
 
     def __init__(self, message='Invalid user name entered'):
@@ -11,147 +14,180 @@ class InvalidUsernameError(Exception):
 
 class UsernameValidation:
     """
-    A class to check the validity of a provided username
+    Checks the validity of a provided username
 
-    ...
-
-    Attributes
-    ----------
-    username : str
-        username for validation
-    username_is_email : bool
-        determines if the username is expected to be an email address
-    symbol_list : list
-        list of valid symbols that can be included in username
-    validity : bool
-        boolean stating if provided username is valid
+    Attributes:
+        username (str): Username for validation
+        username_prefix (str): The prefix of the user's email (if
+            applicable)
+        username_type (str): The type of user (Email or IAM)
+        user_domain (str): The user's email domain (if applicable)
+        valid_symbol_list (list): List of valid symbols that can be
+            included in username
     """
 
-    # Class variables
     valid_email_symbols = ['_', '-', '.', '@', '+']
     valid_iam_user_symbols = ['+', '=', ',', '.', '@', '_', '-']
 
-    def __init__(self, username: str, username_is_email: bool = True):
+    # Rudimentary regex to seperate email formats (even if invalid)
+    # from normal IAM usernames. Various methods defined below will
+    # test the validity of the email address.
+    basic_email_regex = "^.+@.+\\..+$"
+
+    def __init__(self, username: str):
+        """
+        Constructs the attributes of the UsernameValidation object
+        
+        Arguments:
+            username (str): Username for validation
+        """
+
         self.username = username
-        self.username_is_email = username_is_email
-        if self.username_is_email:
-            self.symbol_list = self.valid_email_symbols
-            self._prefix = self.split_username()[0]
-            self._domain = self.split_username()[1]
+        self._user_attributes = self.split_username()
+        self.username_prefix = self._user_attributes[0]
+        self.username_type = self._user_attributes[1]
+        self.user_domain = self._user_attributes[2]
+        if self.username_type == "email":
+            self.valid_symbol_list = self.valid_email_symbols
         else:
-            self.symbol_list = self.valid_iam_user_symbols
-            self._prefix = self.username
-            self._domain = ""
-        # Assume username is valid and set to invalid based on checks
-        self.validity = True
+            self.valid_symbol_list = self.valid_iam_user_symbols
+        self._symbols_string = ', '.join(self.valid_symbol_list)
         self.check_all()
 
-    # Split username into prefix and domain(only applies to email)
     def split_username(self):
-        username_parts = self.username.split('@')
-        prefix = username_parts[0]
-        if len(username_parts) == 2:
-            domain = username_parts[1]
-        else:
+        """
+        Determines username type and splits into prefix and domain if
+        username is an email address
+        
+        Returns:
+            prefix (str): The first part of the username
+            user_type (str): The type of username
+            domain (str): The domain of the user if an email address
+        """
+
+        if re.match(self.basic_email_regex, self.username) is None:
+            user_type = "iam"
+            prefix = self.username
             domain = ""
-        return prefix, domain
+        else:
+            user_type = "email"
+            username_parts = self.username.split('@')
+            domain = username_parts[-1]
+            # Retain '@' if there are multiple. Will be checked later.
+            prefix = "@".join(username_parts[:-1])
 
-    # Helper function to remove specified valid symbols from a string and test
-    # if the resulting string is alphanumeric.
-    def strip_valid_symbols(self, test_string):
-        output = test_string
-        for symbol in self.symbol_list:
-            output = output.replace(symbol, '')
-        output_alphanum = output.isalnum()
-        return output, output_alphanum
+        return prefix, user_type, domain
 
-    # Check if username has invalid symbols
     def check_invalid_symbols(self):
-        stripped_prefix = self.strip_valid_symbols(self._prefix)
-        if not stripped_prefix[1]:
-            self.validity = False
-            message = "Provided username contains invalid symbol(s). " + \
-                "Provided username can only contain {}".format(
-                    ', '.join(self.symbol_list))
-            raise InvalidUsernameError(message)
-        elif self.username_is_email:
-            stripped_domain = self.strip_valid_symbols(self._domain)
-            if not stripped_domain[1]:
-                self.validity = False
-                message = "The domain of the email address contains " + \
-                    "invalid symbol(s). Provided username can only " + \
-                    "contain {}".format(', '.join(self.symbol_list))
-                raise InvalidUsernameError(message)
+        """
+        Tests a username to ensure that all characters are alphanumeric
+        after valid special characters are removed
+        """
 
-    # Ensure provided email address has a single @ symbol
+        clean_username = self.username
+        for symbol in self.valid_symbol_list:
+            clean_username = clean_username.replace(symbol, '')
+        if not clean_username.isalnum():
+            message = "Provided username contains invalid symbol(s)." \
+                      " Provided username can only contain" \
+                      f"{self._symbols_string}"
+            raise InvalidUsernameError(message)
+
     def check_single_at(self):
-        if self.username_is_email:
+        """
+        Validates that email address only contains a single '@' symbol
+        """
+
+        if self.username_type == "email":
             at_count = self.username.count("@")
             if at_count != 1:
-                self.validity = False
-                message = "User name should contain a single '@' symbol. " + \
-                    "Provided name has {}.".format(at_count)
+                message = "User name should contain a single '@' " \
+                          f"symbol. Provided name has {at_count}."
                 raise InvalidUsernameError(message)
     
-    # Check if prefix or domain starts with a number or letter
-    def starts_alphanumeric(self, test_string, string_type):
-        if not test_string[0].isalnum():
-            self.validity = False
-            message = "{} does not start with an ".format(string_type) + \
+    def starts_alphanumeric(self, entry : str, entry_type : str):
+        """
+        Tests if provided string begins with an alphanumeric character
+        
+        Arguments:
+            entry (str): The string to test
+            entry_type (str): The type of string (Username or Domain)
+        """
+
+        if not entry[0].isalnum():
+            message = f"{entry_type} does not start with an " \
+                      "alphanumeric character"
+            raise InvalidUsernameError(message)
+
+    def ends_alphanumeric(self, entry : str, entry_type :  str):
+        """
+        Tests if provided string ends with an alphanumeric character
+        
+        Arguments:
+            entry (str): The string to test
+            entry_type (str): The type of string (Username or Domain)
+        """
+
+        string_length = len(entry)
+        if not entry[string_length-1].isalnum():
+            message = f"{entry_type} does not end with an " \
                 "alphanumeric character"
             raise InvalidUsernameError(message)
 
-    # Check if prefix or domain ends with a number or letter
-    def ends_alphanumeric(self, test_string, string_type):
-        string_length = len(test_string)
-        if not test_string[string_length-1].isalnum():
-            self.validity = False
-            message = "{} does not end with an ".format(string_type) + \
-                "alphanumeric character"
-            raise InvalidUsernameError(message)
+    def is_next_alphanum(self, entry : str):
+        """
+        Test to ensure that username does not contain consecutive
+        symbols
 
-    # Check if valid symbols are followed by number or letter
-    # Does not check last character as that would cause index error
-    def is_next_alphanum(self, test_string):
-        if not test_string.isalnum():
-            string_length = len(test_string)
+        Arguments:
+            entry (str): The string to test
+        """
+
+        if not entry.isalnum():
+            string_length = len(entry)
             for x in range(string_length-1):
-                if not test_string[x].isalnum():
-                    if not test_string[x+1].isalnum():
-                        self.validity = False
-                        message = "Username contains consecutive symbols"
+                if not entry[x].isalnum():
+                    if not entry[x+1].isalnum():
+                        message = "Username contains consecutive " \
+                                  "symbols"
                         raise InvalidUsernameError(message)
 
-    # Check if domain ends in at least 2 characters
     def check_domain_end(self):
-        if self.username_is_email:
-            domain_parts = self._domain.split('.')
+        """
+        Tests if username's domain ends in at least 2 characters if the
+        username is an email address
+        """
+
+        if self.username_type == "email":
+            domain_parts = self.user_domain.split('.')
             parts_length = len(domain_parts)
             if parts_length < 2:
-                self.validity = False
-                message = "Domain contains less than 2 parts separated by '.'"
+                message = "Domain contains less than 2 parts " \
+                          "separated by '.'"
                 raise InvalidUsernameError(message)
             else:
                 domain_end = domain_parts[parts_length-1]
                 domain_end_length = len(domain_end)
                 if not domain_end.isalnum():
-                    self.validity = False
                     message = "Domain ending is not alphanumeric"
                     raise InvalidUsernameError(message)
                 elif domain_end_length < 2:
-                    self.validity = False
                     message = "Domain ends with less than 2 characters"
                     raise InvalidUsernameError(message)
     
-    # Run all username validation checks
     def check_all(self):
+        """
+        Runs all defined validation methods to ensure that the username
+        is valid
+        """
+
         self.check_single_at()
         self.check_invalid_symbols()
-        self.starts_alphanumeric(self._prefix, "Username")
-        self.ends_alphanumeric(self._prefix, "Username")
-        self.is_next_alphanum(self._prefix)
-        if self.username_is_email:
-            self.starts_alphanumeric(self._domain, "Domain")
-            self.ends_alphanumeric(self._domain, "Domain")
-            self.is_next_alphanum(self._domain)
+        self.starts_alphanumeric(self.username_prefix, "Username")
+        self.ends_alphanumeric(self.username_prefix, "Username")
+        self.is_next_alphanum(self.username_prefix)
+        if self.username_type == "email":
+            self.starts_alphanumeric(self.user_domain, "Domain")
+            self.ends_alphanumeric(self.user_domain, "Domain")
+            self.is_next_alphanum(self.user_domain)
             self.check_domain_end()

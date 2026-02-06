@@ -27,8 +27,6 @@ target_profile - option
 home_directory - option
 config_file - option
 
-username_is_email - change to username_is_iam and set as flag?
-
 """
 
 def setup_main_parser():
@@ -55,7 +53,6 @@ def setup_login_parser(subparser):
     parser.add_argument('-r', '--reset-password', action='store_true', help='Reset keyring password')
     parser.add_argument('-n', '--role-name', help='The name of your IAM role')
     parser.add_argument('-t', '--target-profile', help='Name of the section where credentials will be stored in the credentials file', type=str)
-    parser.add_argument('-u', '--username-not-email', action='store_false', help='Indicates that the supplied username will not need to be in an email format')
     parser.set_defaults(func=login_func)
     return parser
 
