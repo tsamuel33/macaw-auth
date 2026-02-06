@@ -1,3 +1,5 @@
+import re
+
 class InvalidUsernameError(Exception):
     """
     Raises an exception when an invalid username is entered
@@ -26,6 +28,11 @@ class UsernameValidation:
 
     valid_email_symbols = ['_', '-', '.', '@', '+']
     valid_iam_user_symbols = ['+', '=', ',', '.', '@', '_', '-']
+
+    # Rudimentary regex to seperate email formats (even if invalid)
+    # from normal IAM usernames. Various methods defined below will
+    # test the validity of the email address.
+    basic_email_regex = "^.+@.+\\..+$"
 
     def __init__(self, username: str):
         """
@@ -58,14 +65,17 @@ class UsernameValidation:
             domain (str): The domain of the user if an email address
         """
 
-        user_type = "iam"
-        username_parts = self.username.split('@')
-        prefix = username_parts[0]
-        if len(username_parts) == 2:
-            domain = username_parts[1]
-            user_type = "email"
-        else:
+        if re.match(self.basic_email_regex, self.username) is None:
+            user_type = "iam"
+            prefix = self.username
             domain = ""
+        else:
+            user_type = "email"
+            username_parts = self.username.split('@')
+            domain = username_parts[-1]
+            # Retain '@' if there are multiple. Will be checked later.
+            prefix = "@".join(username_parts[:-1])
+
         return prefix, user_type, domain
 
     def check_invalid_symbols(self):
