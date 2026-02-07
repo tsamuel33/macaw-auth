@@ -1,17 +1,3 @@
-class CommonFunctionError(Exception):
-    """Raises an exception encountering an error while trying
-    to assume a fole.
-
-    Attributes:
-        message -- message indicating the specifics of the error
-    """
-
-    def __init__(self,
-            message='Incorrect configuration. Check your configuration file'):
-        self.message = message
-        super().__init__(self.message)
-
-
 def arn_validation(arn : str, arn_type="role"):
     is_arn = True
     is_valid = True
