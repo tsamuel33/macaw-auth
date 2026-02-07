@@ -46,4 +46,4 @@ def arn_validation(arn : str, arn_type="role"):
     if is_valid:
         return (is_valid, is_arn)
     else:
-        raise CommonFunctionError(message)
+        raise Exception(message)
