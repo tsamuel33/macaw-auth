@@ -33,29 +33,28 @@ class Configuration:
 
     def __init__(self, config_type, section_name, config_file=None, **config_parameters):
         self.config_type = self.arg_to_string(config_type)
-        self.config_path = self.select_config_file_path(
-            config_type, config_file)
+        self.config_path = self.select_config_file_path(config_file)
         self.config_section = self.select_config_section(self.arg_to_string(section_name))
         self.config = self.initialize_config()
         if len(config_parameters) > 0:
             self.parse_config_parameters(config_parameters)
 
     # Set the configuration/credential file to use
-    def select_config_file_path(self, file_type, file_path):
+    def select_config_file_path(self, file_path):
         """
         Example
         """
         if file_path is not None:
             config_path = file_path
         else:
-            if file_type == 'configuration':
+            if self.config_type == 'configuration':
                 config_path = self.default_configuration_file
-            elif file_type == 'credential':
+            elif self.config_type == 'credential':
                 config_path = self.default_credentials_file
             else:
                 # The config type should be transparent to end users but add an
                 # error just in case
-                message = "Invalid config type passed: {}. ".format(file_type) + \
+                message = "Invalid config type passed: {}. ".format(self.config_type) + \
                     "Valid config types are 'configuration' and 'credential'"
                 raise ConfigurationError(message)
         return config_path
