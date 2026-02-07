@@ -2,37 +2,30 @@ import configparser
 from pathlib import Path
 
 class ConfigurationError(Exception):
-    """Raises an exception when required configuration items are
-    set incorrectly.
+    """
+    Raises an exception when required configuration items are set
+    incorrectly.
 
     Attributes:
-        message -- message indicating the specifics of the error
+        message (str) : message indicating the specifics of the error
     """
 
     def __init__(self,
-            message='Incorrect configuration. Check your configuration file'):
+            message='Incorrect configuration. Check your config file'):
         self.message = message
         super().__init__(self.message)
 
 class Configuration:
     """
     A base class used to define various configurations used by the utility
-    including role config and user credentials
+    including role configuration and user credentials
 
-    ...
 
-    Attributes
-    ----------
-    # config_type : str
-    #     username for validation
-    # config_section : bool
-    #     determines if the username is expected to be an email address
-    # config_path : list
-    #     list of valid symbols that can be included in username
-    # config : bool
-    #     boolean stating if provided username is valid
-    # config_parameters :
-    #     temp
+    Attributes:
+        config_type (str): Config file type (configuration or credential)
+        section_name (str):
+        config_file (str):
+        config_parameters (kwargs):
     """
 
     default_configuration_file = Path.home() / ".aws" / "config"
@@ -49,10 +42,13 @@ class Configuration:
 
     # Set the configuration/credential file to use
     def select_config_file_path(self, file_type, file_path):
+        """
+        Example
+        """
         if file_path is not None:
             config_path = file_path
         else:
-            if file_type == 'user':
+            if file_type == 'configuration':
                 config_path = self.default_configuration_file
             elif file_type == 'credential':
                 config_path = self.default_credentials_file
@@ -60,7 +56,7 @@ class Configuration:
                 # The config type should be transparent to end users but add an
                 # error just in case
                 message = "Invalid config type passed: {}. ".format(file_type) + \
-                    "Valid config types are 'user' and 'credential'"
+                    "Valid config types are 'configuration' and 'credential'"
                 raise ConfigurationError(message)
         return config_path
 
@@ -80,7 +76,7 @@ class Configuration:
             # The config type should be transparent to end users but add an
             # error just in case
             message = "Invalid config type passed: {}. ".format(self.config_type) + \
-                "Valid config types are 'user, and 'credential'"
+                "Valid config types are 'configuration, and 'credential'"
             raise ConfigurationError(message)
         return config_section
 
@@ -111,7 +107,7 @@ class Configuration:
     def get_config_setting(self, attribute):
         setting = self.config[self.config_section].get(attribute)
         # If value isn't found in profile, check macaw-auth section
-        if setting is None and self.config_type == 'user' and self.config_section != 'macaw-auth':
+        if setting is None and self.config_type == 'configuration' and self.config_section != 'macaw-auth':
             setting = self.config['macaw-auth'].get(attribute)
         return setting
 
