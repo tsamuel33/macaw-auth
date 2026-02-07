@@ -51,12 +51,6 @@ class Configuration:
                 config_path = self.default_configuration_file
             elif self.config_type == 'credential':
                 config_path = self.default_credentials_file
-            else:
-                # The config type should be transparent to end users but add an
-                # error just in case
-                message = "Invalid config type passed: {}. ".format(self.config_type) + \
-                    "Valid config types are 'configuration' and 'credential'"
-                raise ConfigurationError(message)
         return config_path
 
     # Select which section of the configuration file will be used
@@ -71,12 +65,6 @@ class Configuration:
                 config_section = 'macaw-auth'
             else:
                 config_section = 'profile ' + section
-        else:
-            # The config type should be transparent to end users but add an
-            # error just in case
-            message = "Invalid config type passed: {}. ".format(self.config_type) + \
-                "Valid config types are 'configuration, and 'credential'"
-            raise ConfigurationError(message)
         return config_section
 
     def initialize_config(self):
