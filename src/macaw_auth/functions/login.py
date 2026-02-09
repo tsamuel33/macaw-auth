@@ -33,8 +33,7 @@ def main(args) -> None:
     }
 
     print('Welcome! Checking your configuration files...')
-    client_config = Configuration('user', args['SOURCE_PROFILE'],
-                           args['config_file'], **client_parameters)
+    client_config = Configuration(args['SOURCE_PROFILE'],**client_parameters)
     client = client_config.config[client_config.config_section]
     user = get_username(client['username'])
     validation = UsernameValidation(user)
