@@ -120,7 +120,6 @@ class Configuration:
         """
 
         file_exists = Path.is_file(self.config_path)
-        #TODO - build logic to avoid erroring out if user passes everything via command line
         if not file_exists:
             if self.config_type == "credential":
                 # Create credential file if it doesn't exist

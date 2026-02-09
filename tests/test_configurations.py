@@ -24,12 +24,3 @@ class TestConfigurationFiles:
         config_path = Path.cwd()/"tests"/"test_files"/"credentials2"
         Configuration("use-defaults", config_path, "credential")
         assert Path.is_file(config_path)
-
-        """
-        Test cases
-        Config
-        2. Pass all config via command line
-
-
-
-        """
