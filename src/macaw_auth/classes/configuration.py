@@ -121,7 +121,6 @@ class Configuration:
 
         file_exists = Path.is_file(self.config_path)
         #TODO - build logic to avoid erroring out if user passes everything via command line
-        #TODO - create credentials file if it doesn't exist. May do the same for config but probably not
         if not file_exists:
             if self.config_type == "credential":
                 # Create credential file if it doesn't exist
@@ -139,14 +138,6 @@ class Configuration:
                 self.config_section != self.default_config_section):
             config.add_section(self.config_section)
         return config
-
-    @staticmethod
-    def arg_to_string(arg): #TODO - remove if possible, otherwise write a docstring
-        if arg is not None:
-            value = str(arg)
-        else:
-            value = arg
-        return value
 
     def get_config_setting(self, attribute):
         """
@@ -205,7 +196,9 @@ class Configuration:
 
         for key, value in parameters.items():
             self.set_config_value(
-                key, self.arg_to_string(value[0]), value[1], value[2])
+                # Convert value[0] to string if it is not a NoneType
+                key, lambda x: str(x) if x is not None else x,
+                value[1], value[2])
 
     def write_config(self):
         """
