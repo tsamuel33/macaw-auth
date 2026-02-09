@@ -15,20 +15,21 @@ class TestConfigurationFiles:
         idp = config.get_config_setting("idp_name")
         assert idp == "ADFS"
 
-    def test_account_num(self):
-        config = Configuration("badusername", self.config_file)
-        an = config.get_config_setting("account_number")
-        print(an)
-        assert an == "034477685180"
+    def test_use_non_existent_config_path(self):
+        config_path = Path.cwd() / "tests" / "test_files" / "config2"
+        with pytest.raises(ConfigurationError, match="does not exist"):
+            Configuration("use-defaults", config_path)
+
+    def test_use_non_existent_config_path(self):
+        config_path = Path.cwd()/"tests"/"test_files"/"credentials2"
+        Configuration("use-defaults", config_path, "credential")
+        assert Path.is_file(config_path)
 
         """
         Test cases
         Config
-        1. Pull missing parameters from macaw-auth section
         2. Pass all config via command line
 
 
 
-        Credentials
-        1. Create credential file if missing
         """
