@@ -123,10 +123,15 @@ class Configuration:
         #TODO - build logic to avoid erroring out if user passes everything via command line
         #TODO - create credentials file if it doesn't exist. May do the same for config but probably not
         if not file_exists:
-            message = f"Configuration file: {self.config_path} does " \
-                      "not exist. Please create the file and set the" \
-                      " configuration options"
-            raise ConfigurationError(message)
+            if self.config_type == "credential":
+                # Create credential file if it doesn't exist
+                with open(self.config_path, "w") as config_file:
+                    config_file.write("[default]")
+            elif self.config_type == "configuration":
+                message = f"Configuration file: {self.config_path} " \
+                          "does not exist. Please create the file " \
+                          "and set the configuration options."
+                raise ConfigurationError(message)
         config = configparser.ConfigParser(
                default_section=self.default_config_section)
         config.read(self.config_path)
