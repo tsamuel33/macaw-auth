@@ -123,13 +123,15 @@ class Configuration:
         #TODO - build logic to avoid erroring out if user passes everything via command line
         #TODO - create credentials file if it doesn't exist. May do the same for config but probably not
         if not file_exists:
-            message = "Configuration file: {} does not exist. ".format(
-                self.config_path) + "Please create the file and set the " + \
-                "configuration options"
+            message = f"Configuration file: {self.config_path} does " \
+                      "not exist. Please create the file and set the" \
+                      " configuration options"
             raise ConfigurationError(message)
-        config = configparser.ConfigParser(default_section=self.default_config_section)
+        config = configparser.ConfigParser(
+               default_section=self.default_config_section)
         config.read(self.config_path)
-        if self.config_section not in config.sections() and self.config_section != self.default_config_section:
+        if (self.config_section not in config.sections() and
+                self.config_section != self.default_config_section):
             config.add_section(self.config_section)
         return config
 
@@ -178,7 +180,8 @@ class Configuration:
             setting = self.get_config_setting(attribute_name)
             if setting is None:
                 if required:
-                    message = "Required configuration value is missing: " + attribute_name
+                    message = "Required configuration value is " \
+                              f"missing: {attribute_name}"
                     raise ConfigurationError(message)
                 else:
                     self.config[self.config_section][attribute_name] = default
@@ -196,7 +199,8 @@ class Configuration:
         """
 
         for key, value in parameters.items():
-            self.set_config_value(key, self.arg_to_string(value[0]), value[1], value[2])
+            self.set_config_value(
+                key, self.arg_to_string(value[0]), value[1], value[2])
 
     def write_config(self):
         """
@@ -207,13 +211,19 @@ class Configuration:
         with open(self.config_path, 'w+') as configfile:
             self.config.write(configfile)
 
-        # Give the user some basic info as to what has just happened
-        print('\n\n')
-        print('-'*64)
-        print('Your new access key pair has been stored in the AWS configuration file {0} under the {1} profile.'.format(self.config_path, self.config_section))
-        print('Note that it will expire at {0}.'.format(self.config[self.config_section]['expiration']))
-        print('After this time, you may safely rerun this script to refresh your access key pair.')
-        if self.config_section != 'default':
-            print('To use this credential, call the AWS CLI with the --profile option (e.g. aws --profile {0} ec2 describe-instances).'.format(self.config_section))
-        print('-'*64)
-        print('\n\n')
+        if self.config_type == "credential":
+            print('\n\n')
+            print('-'*64)
+            print('Your new CLI credentials have been stored in the '
+                  f'AWS configuration file {self.config_path} under '
+                  f'the {self.config_section} profile.')
+            print('Note that they will expire at '
+                  '{}.'.format(self.config[self.config_section]['expiration']))
+            print('After this time, you may safely rerun this script'
+                  ' to refresh your credentials.')
+            if self.config_section != 'default':
+                print('To use this credential, call the AWS CLI with '
+                      'the --profile option (e.g. aws --profile '
+                      f'{self.config_section} ec2 describe-instances).')
+            print('-'*64)
+            print('\n\n')
