@@ -3,7 +3,7 @@ from pathlib import Path
 
 class ConfigurationError(Exception):
     """
-    Raises an exception when required configuration items are set
+    Raise an exception when required configuration items are set
     incorrectly.
 
     Attributes:
@@ -17,21 +17,41 @@ class ConfigurationError(Exception):
 
 class Configuration:
     """
-    A base class used to define various configurations used by the utility
-    including role configuration and user credentials
-
+    Define a base class used for various configurations used by the
+    utility including role configuration and user credentials.
 
     Attributes:
-        config_type (str): Config file type (configuration or credential)
-        section_name (str):
-        config_file (str):
-        config_parameters (kwargs):
+        config_type (str): Config file type
+        config_section (str): The section of the configuration file
+            that will be used with macaw-auth commands
+        default_config_section (str): The default configuration section
+            that will be used if a section is not specified
+        config_path (str): Location of the configuration file
+        config (Configuration): The Configuration class object
+        default_configuration_file (pathlib.Path): The default location
+            of the configuration file
+        default_credentials_file (pathlib.Path): The default location
+            of the credentials file
     """
 
     default_configuration_file = Path.home() / ".aws" / "config"
     default_credentials_file = Path.home() / ".aws" / "credentials"
 
-    def __init__(self, section_name, config_file=None, config_type : str = "configuration", **config_parameters):
+    def __init__(
+            self, section_name, config_file=None,
+            config_type : str = "configuration", **config_parameters):
+        """
+        Construct the attributes of the Configuration object.
+        
+        Arguments:
+            section_name (str): The section of the configuration file
+                that will be used with macaw-auth commands
+            config_file (str): Location of the configuration file 
+            config_type (str): Config file type
+            config_parameters (kwargs): Extra parameters used for the
+                Configuration class methods
+        """
+
         self.config_type = config_type
         if self.config_type == "configuration":
             self.default_config_section = "macaw-auth"
@@ -43,11 +63,18 @@ class Configuration:
         if len(config_parameters) > 0:
             self._parse_config_parameters(config_parameters)
 
-    # Set the configuration/credential file to use
     def _select_config_file_path(self, file_path):
         """
-        Example
+        Select the configuration file to use. Uses the default
+        configuration file if a config file path is not specified.
+
+        Arguments:
+            file_path (str): Path to the selected config file
+
+        Returns:
+            config_path (str): The path to the selected config file
         """
+
         if file_path is not None:
             config_path = file_path
         else:
@@ -57,8 +84,18 @@ class Configuration:
                 config_path = self.default_credentials_file
         return config_path
 
-    # Select which section of the configuration file will be used
     def _select_config_section(self, section=None):
+        """
+        Select the section of the configuration file to use. Uses the
+        default section if a config section is not specified.
+
+        Arguments:
+            section (str): The name of the config section to use
+
+        Returns:
+            config_section (str): The config section that will be used
+        """
+
         config_section = None
         if self.config_type == 'credential':
             if section is not None:
@@ -71,7 +108,17 @@ class Configuration:
         return config_section
 
     def _initialize_config(self):
-        # Check if config file already exists
+        """
+        Create the Configuration class object by loading the specified
+        or default configuration file with provided parameters.
+        
+        Arguments:
+            config_path (str): Location of the configuration file 
+
+        Returns:
+            config (Configuration): The Configuration class object
+        """
+
         file_exists = Path.is_file(self.config_path)
         #TODO - build logic to avoid erroring out if user passes everything via command line
         #TODO - create credentials file if it doesn't exist. May do the same for config but probably not
@@ -87,7 +134,7 @@ class Configuration:
         return config
 
     @staticmethod
-    def arg_to_string(arg):
+    def arg_to_string(arg): #TODO - remove if possible, otherwise write a docstring
         if arg is not None:
             value = str(arg)
         else:
@@ -95,13 +142,36 @@ class Configuration:
         return value
 
     def get_config_setting(self, attribute):
+        """
+        Get the selected attribute from the configuration file.
+
+        Arguments:
+            attribute (str): The name of the key for the desired value
+
+        Returns:
+            setting (str): The value of the specified attribute
+        """
+
         setting = self.config[self.config_section].get(attribute)
-        # # If value isn't found in profile, check macaw-auth section
-        # if setting is None and self.config_type == 'configuration' and self.config_section != 'macaw-auth':
-        #     setting = self.config['macaw-auth'].get(attribute)
         return setting
 
-    def set_config_value(self, attribute_name, value, required=False, default=''):
+    def set_config_value(
+            self, attribute_name, value,
+            required=False, default=''):
+        """
+        Set the value of the selected attribute within the
+        Configuration object.
+        
+        Arguments:
+            attribute_name (str): The name of the attribute for which
+                the value will be set
+            value (str): The value to be set within the configuration
+            required (bool): Denotes if the attribute is required or
+                optional
+            default (str): The default value of the attribute if no
+                value is provided
+        """
+
         if value is not None:
             self.config[self.config_section][attribute_name] = str(value)
         else:
@@ -116,19 +186,34 @@ class Configuration:
                 self.config[self.config_section][attribute_name] = setting
     
     def _parse_config_parameters(self, parameters : dict):
+        """
+        Set configuration values for any keyword arguments passed to
+        the Configuration class.
+
+        Arguments:
+            parameters (kwargs): A set of keyword arguments to pass
+                into the configuration
+        """
+
         for key, value in parameters.items():
             self.set_config_value(key, self.arg_to_string(value[0]), value[1], value[2])
 
     def write_config(self):
-        # Write the updated config file
+        """
+        Write the Configuration object to the specified configuration
+        file.
+        """
+
         with open(self.config_path, 'w+') as configfile:
             self.config.write(configfile)
 
         # Give the user some basic info as to what has just happened
-        print('\n\n----------------------------------------------------------------')
+        print('\n\n')
+        print('-'*64)
         print('Your new access key pair has been stored in the AWS configuration file {0} under the {1} profile.'.format(self.config_path, self.config_section))
         print('Note that it will expire at {0}.'.format(self.config[self.config_section]['expiration']))
         print('After this time, you may safely rerun this script to refresh your access key pair.')
         if self.config_section != 'default':
             print('To use this credential, call the AWS CLI with the --profile option (e.g. aws --profile {0} ec2 describe-instances).'.format(self.config_section))
-        print('----------------------------------------------------------------\n\n')
+        print('-'*64)
+        print('\n\n')
