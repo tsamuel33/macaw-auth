@@ -4,8 +4,6 @@ from bs4 import BeautifulSoup #pip install beautifulsoup4
 from getpass import getpass
 from urllib.parse import urlparse
 import re
-import sys
-import base64
 
 class AuthenticationError(Exception):
     """Raises an exception when the user is unable to successfully
@@ -96,9 +94,6 @@ class SAMLAssertion:
                 message = "Authentication attempt did not contain a valid SAML assertion. Please confirm credentials and network connectivity."
                 raise AuthenticationError(message)
         self.assertion = assertion
-
-        # Debug only
-        # print(base64.b64decode(assertion))
 
     def get_vip_code(self):
         vip_code = getpass(prompt='Enter your Symantec VIP security code: ')
