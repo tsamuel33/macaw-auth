@@ -195,9 +195,7 @@ class Configuration:
 
         for key, value in parameters.items():
             self.set_config_value(
-                # Convert value[0] to string if it is not a NoneType
-                key, lambda x: str(x) if x is not None else x,
-                value[1], value[2])
+                key, value[0], value[1], value[2])
 
     def write_config(self):
         """
