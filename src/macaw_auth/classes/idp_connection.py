@@ -117,8 +117,6 @@ class SAMLAssertion:
     def get_saml_assertion(self):
         """
         Makes request to retrieve SAML assertion
-
-
         """
 
         mfa_enabled = False
@@ -134,7 +132,6 @@ class SAMLAssertion:
                 mfa_enabled = True
 
         if (assertion == ''):
-            invalid_assertion = True
             if mfa_enabled:
                 assertion = self.authenticate_with_mfa()
             else:
@@ -151,7 +148,7 @@ class SAMLAssertion:
         try:
             int(vip_code)
             return vip_code
-        except ValueError as err:
+        except ValueError:
             print('ERROR: Code must be a number. Try again...')
             self.get_vip_code()
 
