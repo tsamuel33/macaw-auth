@@ -35,7 +35,9 @@ class SAMLAssertion:
             endpoint should be verified
     """
 
-    def __init__(self, username, password, identity_url, auth_type, ssl_verification=True):
+    def __init__(
+            self, username, password, identity_url, auth_type,
+            ssl_verification=True):
         """
         Constructs the attributes of the SAMLAssertion object
         
@@ -67,12 +69,15 @@ class SAMLAssertion:
         """
 
         if self.auth_type == 'ntlm':
-            self.session.auth = HttpNtlmAuth(self.__username, self.__password, self.session)
-        self.response = self.session.get(self.identity_url, verify=self.ssl_verification)
-        print(self.response.text)
+            self.session.auth = HttpNtlmAuth(self.__username,
+                                             self.__password,
+                                             self.session)
+        self.response = self.session.get(
+            self.identity_url,verify=self.ssl_verification)
         if self.auth_type == 'web_form':
             self._redirect_url = self.response.url
-        self.__soup = BeautifulSoup(self.response.text, features="html.parser")
+        self.__soup = BeautifulSoup(
+            self.response.text, features="html.parser")
 
     def create_web_form_payload(self):
         """
@@ -84,7 +89,8 @@ class SAMLAssertion:
         for inputtag in self.__soup.find_all(re.compile('(INPUT|input)')):
             name = inputtag.get('name','')
             value = inputtag.get('value','')
-            # Locate user credential fields in web form by searching for "user[name]", "email", and "pass[word]"
+            # Locate user credential fields in web form by searching
+            # for "user[name]", "email", and "pass[word]"
             if "user" in name.lower():
                 payload[name] = self.__username
             elif "email" in name.lower():
@@ -107,11 +113,12 @@ class SAMLAssertion:
             loginid = inputtag.get('id')
             if (action and loginid == "loginForm"):
                 parsedurl = urlparse(self.identity_url)
-                self._redirect_url = parsedurl.scheme + "://" + parsedurl.netloc + action
+                redirect = f"{parsedurl.scheme}://{parsedurl.netloc}{action}"
+                self._redirect_url = redirect
 
-        # Performs the submission of the IdP login form with the above post data
-        response = self.session.post(
-            self._redirect_url, data=self.__payload, verify=self.ssl_verification)
+        response = self.session.post(self._redirect_url,
+                                     data=self.__payload,
+                                     verify=self.ssl_verification)
         self.__soup = BeautifulSoup(response.text, features="html.parser")
 
     def get_saml_assertion(self):
@@ -122,8 +129,6 @@ class SAMLAssertion:
         mfa_enabled = False
         assertion = ''
 
-        # Look for the SAMLResponse attribute of the input tag (determined by
-        # analyzing the debug print lines above)
         for inputtag in self.__soup.find_all('input'):
             if(inputtag.get('name') == 'SAMLResponse'):
                 assertion = inputtag.get('value')
@@ -135,7 +140,9 @@ class SAMLAssertion:
             if mfa_enabled:
                 assertion = self.authenticate_with_mfa()
             else:
-                message = "Authentication attempt did not contain a valid SAML assertion. Please confirm credentials and network connectivity."
+                message = "Authentication attempt did not contain a " \
+                    "valid SAML assertion. Please confirm " \
+                    "credentials and network connectivity."
                 raise AuthenticationError(message)
         self.assertion = assertion
 
@@ -144,7 +151,8 @@ class SAMLAssertion:
         Gets code required for user to log in with Symantec VIP
         """
 
-        vip_code = getpass(prompt='Enter your Symantec VIP security code: ')
+        vip_code = getpass(
+            prompt='Enter your Symantec VIP security code: ')
         try:
             int(vip_code)
             return vip_code
@@ -167,7 +175,8 @@ class SAMLAssertion:
             for inputtag in self.__soup.find_all('input'):
                 name = inputtag.get('name','')
                 value = inputtag.get('value','')
-                # Locate VIP code fields in web form by searching for "[security_]code"
+                # Locate VIP code fields in web form by
+                # searching for "[security_]code"
                 if "code" in name.lower():
                     payload[name] = code
                 else:
@@ -176,7 +185,8 @@ class SAMLAssertion:
 
             # Performs the submission of the Symantec VIP code
             response = self.session.post(
-                self._redirect_url, data=payload, verify=self.ssl_verification)
+                self._redirect_url, data=payload,
+                verify=self.ssl_verification)
             self.__soup = BeautifulSoup(response.text, features="html.parser")
             for inputtag in self.__soup.find_all('input'):
                 if(inputtag.get('name') == 'SAMLResponse'):
@@ -184,11 +194,13 @@ class SAMLAssertion:
                     invalid_assertion = False
                     break
             if invalid_assertion:
-                print("Incorrect code. Try again... (Strike {}!)".format(str(current_attempt)))
+                msg = "Incorrect code. Try again... " \
+                      f"(Strike {current_attempt}!)"
+                print(msg)
                 self.authenticate_with_mfa(current_attempt)
             else:
                 return assertion
         else:
             # Error out if user enters MFA code incorrectly 3 times
-            message = "Sorry, you struck out. Aborting login...".format(str(attempt))
+            message = "Sorry, you struck out. Aborting login..."
             raise AuthenticationError(message)
