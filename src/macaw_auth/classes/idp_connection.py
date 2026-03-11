@@ -6,21 +6,49 @@ from urllib.parse import urlparse
 import re
 
 class AuthenticationError(Exception):
-    """Raises an exception when the user is unable to successfully
+    """
+    Raises an exception when the user is unable to successfully
     authenticate.
 
     Attributes:
-        message -- message indicating the specifics of the error
+        message (str): message indicating the specifics of the error
     """
 
     def __init__(self,
-            message='Authentication response did not contain a valid SAML assertion'):
+            message='Authentication response did not contain a valid' \
+                    ' SAML assertion. Please check your credentials.'):
         self.message = message
         super().__init__(self.message)
 
 class SAMLAssertion:
+    """
+    Makes authentication request to identity provider and returns
+    the SAML Assertation response.
+
+    Arguments:
+        username (str): The username used to log in
+        password (str): The user's password
+        identity_url (str): The URL to authenticate to
+        auth_type (str): The type of authentication request that will
+            be attempted (ntlm | web_form)
+        ssl_verification (bool): Whether the SSL certificate of the STS
+            endpoint should be verified
+    """
 
     def __init__(self, username, password, identity_url, auth_type, ssl_verification=True):
+        """
+        Constructs the attributes of the SAMLAssertion object
+        
+        Attributes:
+            identity_url (str): The URL to authenticate to
+            ssl_verification (bool): Whether the SSL certificate of the
+                STS endpoint should be verified
+            auth_type (str): The type of authentication request that
+                will be attempted (ntlm | web_form)
+            session (requests.Session): The authenticated session
+            assertion (XML): The SAML assertion
+        """
+
         self.identity_url = identity_url
         self.ssl_verification = ssl_verification
         self.auth_type = auth_type
@@ -34,14 +62,23 @@ class SAMLAssertion:
         self.get_saml_assertion()
 
     def make_saml_request(self):
+        """
+        Makes SAML authentication request
+        """
+
         if self.auth_type == 'ntlm':
             self.session.auth = HttpNtlmAuth(self.__username, self.__password, self.session)
         self.response = self.session.get(self.identity_url, verify=self.ssl_verification)
+        print(self.response.text)
         if self.auth_type == 'web_form':
             self._redirect_url = self.response.url
         self.__soup = BeautifulSoup(self.response.text, features="html.parser")
 
     def create_web_form_payload(self):
+        """
+        Creates required payload for web form SAML requests
+         """
+
         payload = {}
 
         for inputtag in self.__soup.find_all(re.compile('(INPUT|input)')):
@@ -61,6 +98,10 @@ class SAMLAssertion:
         self.__payload = payload
 
     def authenticate_to_web_form(self):
+        """
+        Makes SAML authentication requests for web form authentication
+        """
+
         for inputtag in self.__soup.find_all(re.compile('(FORM|form)')):
             action = inputtag.get('action')
             loginid = inputtag.get('id')
@@ -74,6 +115,12 @@ class SAMLAssertion:
         self.__soup = BeautifulSoup(response.text, features="html.parser")
 
     def get_saml_assertion(self):
+        """
+        Makes request to retrieve SAML assertion
+
+
+        """
+
         mfa_enabled = False
         assertion = ''
 
@@ -96,6 +143,10 @@ class SAMLAssertion:
         self.assertion = assertion
 
     def get_vip_code(self):
+        """
+        Gets code required for user to log in with Symantec VIP
+        """
+
         vip_code = getpass(prompt='Enter your Symantec VIP security code: ')
         try:
             int(vip_code)
@@ -105,6 +156,10 @@ class SAMLAssertion:
             self.get_vip_code()
 
     def authenticate_with_mfa(self, attempt=0):
+        """
+        Makes authentication attempt using MFA code
+        """
+
         current_attempt = attempt + 1
         # Attempt to authenticate with MFA up to 3 times
         if current_attempt <= 3:
