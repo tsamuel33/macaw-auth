@@ -39,7 +39,7 @@ def setup_login_parser(subparser):
     parser.add_argument('SOURCE_PROFILE', help='Name of the profile in your config file containing the desired settings', nargs='?', default=None)
     parser.add_argument('-a', '--account-number', help='AWS account number to log in to.')
     parser.add_argument('--auth-type', help='Authorization type used for SAML request', choices=['ntlm', 'web_form'], nargs='?', default='web_form')
-    parser.add_argument('--config-file', help='Path to config file if ~/.aws/config will not be used')
+    parser.add_argument('--config-file', help='Path to config file if ~/.aws/config will not be used', default=None)
     parser.add_argument('--credential-file', help='Path to credential file if ~/.aws/credentials will not be used')
     parser.add_argument('--disable-keyring', action='store_const', help='Disable storing password in keyring', const=False, dest='enable_keyring')
     parser.add_argument('--duration-seconds', help="Length of time in seconds in which credentials are valid", type=int)
