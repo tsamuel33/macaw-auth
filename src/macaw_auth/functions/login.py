@@ -20,7 +20,6 @@ def main(args) -> None:
         "session_duration": (args['duration_seconds'], False, '3600'),
         "identity_url": (args['identity_url'], True, ''),
         "enable_keyring": (args['enable_keyring'], False, 'False'),
-        "username": (None, False, ''), #TODO - Where does this come from?
         "account_number": (args['account_number'], False, ''),
         "idp_name": (args['idp_name'], False, ''),
         "role_name": (args['role_name'], False, ''),
