@@ -16,12 +16,11 @@ def get_username(name: str) -> str:
     return user
 
 def main(args) -> None:
-    #TODO - ensure that all arguments are passed to the necessary class calls (also double check that all values are brought in from main.py)
     client_parameters = {
         "session_duration": (args['duration_seconds'], False, '3600'),
         "identity_url": (args['identity_url'], True, ''),
         "enable_keyring": (args['enable_keyring'], False, 'False'),
-        "username": (None, False, ''),
+        "username": (None, False, ''), #TODO - Where does this come from?
         "account_number": (args['account_number'], False, ''),
         "idp_name": (args['idp_name'], False, ''),
         "role_name": (args['role_name'], False, ''),
@@ -34,7 +33,7 @@ def main(args) -> None:
 
     print('Welcome! Checking your configuration files...')
     #TODO - change SOURCE_PROFILE to PROFILE_NAME
-    config = Configuration(args['SOURCE_PROFILE'],**client_parameters)
+    config = Configuration(args['SOURCE_PROFILE'], args['config_file'], **client_parameters)
     config_user = config.get_config_setting("username")
     user = get_username(config_user)
     validation = UsernameValidation(user)
