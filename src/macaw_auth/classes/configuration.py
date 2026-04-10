@@ -76,7 +76,7 @@ class Configuration:
         """
 
         if file_path is not None:
-            config_path = file_path
+            config_path = Path(file_path)
         else:
             if self.config_type == 'configuration':
                 config_path = self.default_configuration_file
