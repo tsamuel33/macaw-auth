@@ -33,8 +33,8 @@ class AWSSTSService:
             "aws_session_token": (self.__credentials['SessionToken'], True, ''),
             "expiration": (self.__credentials['Expiration'], True, '')
         }
-        self.__aws_creds = Configuration('credential', target_profile,
-                            credential_file, **cred_parameters)
+        self.__aws_creds = Configuration(target_profile, credential_file,
+                            'credential', **cred_parameters)
         self.__aws_creds.write_config()
 
     def assume(self, account_number, role_name, session_name, partition, path, duration):

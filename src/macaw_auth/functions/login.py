@@ -9,19 +9,17 @@ from macaw_auth.classes.sts_saml import AWSSTSService
 def get_username(name: str) -> str:
     print('Please enter your AWS login credentials.')
     if name != '':
-        print('User ID: {}'.format(name))
+        print(f'User ID: {name}')
         user = name
     else:
         user = input('User ID: ')
     return user
 
 def main(args) -> None:
-
     client_parameters = {
         "session_duration": (args['duration_seconds'], False, '3600'),
         "identity_url": (args['identity_url'], True, ''),
         "enable_keyring": (args['enable_keyring'], False, 'False'),
-        "username": (None, False, ''),
         "account_number": (args['account_number'], False, ''),
         "idp_name": (args['idp_name'], False, ''),
         "role_name": (args['role_name'], False, ''),
@@ -33,16 +31,15 @@ def main(args) -> None:
     }
 
     print('Welcome! Checking your configuration files...')
-    client_config = Configuration('user', args['SOURCE_PROFILE'],
-                           args['config_file'], **client_parameters)
-    client = client_config.config[client_config.config_section]
-    user = get_username(client['username'])
+    config = Configuration(args['PROFILE_NAME'], args['config_file'], **client_parameters)
+    config_user = config.get_config_setting("username")
+    user = get_username(config_user)
     validation = UsernameValidation(user)
-    user_creds = UserCredentials(validation.username, client['identity_url'],
+    user_creds = UserCredentials(validation.username, config.get_config_setting('identity_url'),
                                 args['auth_type'], args['no_ssl'],
-                                args['reset_password'], client['enable_keyring'])
-    sts_service = AWSSTSService(client['region'],verify_ssl=args['no_ssl'])
-    sts_service.login(client['account_number'], client['idp_name'], client['role_name'],
+                                args['reset_password'], config.get_config_setting('enable_keyring'))
+    sts_service = AWSSTSService(config.get_config_setting('region'),verify_ssl=args['no_ssl'])
+    sts_service.login(config.get_config_setting('account_number'), config.get_config_setting('idp_name'), config.get_config_setting('role_name'),
                       user_creds.assertion, args['target_profile'], args['credential_file'],
-                      client['partition'], client['path'], int(client['session_duration']),
-                      client['output'])
+                      config.get_config_setting('partition'), config.get_config_setting('path'), int(config.get_config_setting('session_duration')),
+                      config.get_config_setting('output'))

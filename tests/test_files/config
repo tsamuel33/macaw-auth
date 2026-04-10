@@ -1,0 +1,30 @@
+[default]
+region = us-east-1
+output = json
+
+[macaw-auth]
+session_duration = 3600
+identity_url = https://<ADFS_URL>/adfs/ls/idpinitiatedsignon.htm?loginToRp=urn:amazon:webservices
+username = 
+idp_name = ADFS
+enable_keyring = False
+region = us-east-1
+path = /
+partition = aws
+
+[profile example-profile]
+account_number = 123456789012
+role_name = Administrator
+
+[profile badusername]
+account_number = 123456789012
+identity_url = https://launcher.myapps.microsoft.com/api/signin/
+username = _tsamuel33@gmail.com
+role_name = ReadOnlySAMLRole2
+
+[profile use-defaults]
+account_number = 234567890123
+username = User
+
+[testing]
+idp_name = fake

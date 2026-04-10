@@ -88,8 +88,8 @@ class UsernameValidation:
         for symbol in self.valid_symbol_list:
             clean_username = clean_username.replace(symbol, '')
         if not clean_username.isalnum():
-            message = "Provided username contains invalid symbol(s)." \
-                      " Provided username can only contain" \
+            message = f"Provided username {self.username} contains invalid symbol(s)." \
+                      " Provided username can only contain " \
                       f"{self._symbols_string}"
             raise InvalidUsernameError(message)
 
