@@ -10,6 +10,9 @@ changelog:
       labels:
         - enhancement
         - minor-update
+    - title: Bug Fixes and Security Patches
+      labels:
+        - patch
     - title: Other Changes
       labels:
         - "*"
