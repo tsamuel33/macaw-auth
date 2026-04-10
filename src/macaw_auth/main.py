@@ -36,7 +36,7 @@ def setup_main_parser():
 
 def setup_login_parser(subparser):
     parser = subparser.add_parser('login')
-    parser.add_argument('SOURCE_PROFILE', help='Name of the profile in your config file containing the desired settings', nargs='?', default=None)
+    parser.add_argument('PROFILE_NAME', help='Name of the profile in your config file containing the desired settings', nargs='?', default=None)
     parser.add_argument('-a', '--account-number', help='AWS account number to log in to.')
     parser.add_argument('--auth-type', help='Authorization type used for SAML request', choices=['ntlm', 'web_form'], nargs='?', default='web_form')
     parser.add_argument('--config-file', help='Path to config file if ~/.aws/config will not be used', default=None)

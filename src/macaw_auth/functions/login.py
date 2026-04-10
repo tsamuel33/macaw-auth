@@ -31,8 +31,7 @@ def main(args) -> None:
     }
 
     print('Welcome! Checking your configuration files...')
-    #TODO - change SOURCE_PROFILE to PROFILE_NAME
-    config = Configuration(args['SOURCE_PROFILE'], args['config_file'], **client_parameters)
+    config = Configuration(args['PROFILE_NAME'], args['config_file'], **client_parameters)
     config_user = config.get_config_setting("username")
     user = get_username(config_user)
     validation = UsernameValidation(user)
