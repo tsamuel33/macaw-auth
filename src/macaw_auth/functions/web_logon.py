@@ -1,5 +1,4 @@
 import json
-import sys
 import urllib
 import webbrowser
 from time import sleep
@@ -27,16 +26,9 @@ def main(args):
 
     # Get sign-in token from AWS federation endpoint
     request_parameters = "?Action=getSigninToken"
-    # TODO - Remove the conditional below and only allow Python 3
-    # TODO - Also update pyproject.toml
-    if sys.version_info[0] < 3:
 
-        def quote_plus_function(s):
-            return urllib.quote_plus(s)
-    else:
-
-        def quote_plus_function(s):
-            return urllib.parse.quote_plus(s)
+    def quote_plus_function(s):
+        return urllib.parse.quote_plus(s)
 
     request_parameters += "&Session=" + quote_plus_function(
         json_string_with_temp_credentials
