@@ -109,9 +109,7 @@ class Configuration:
                 config_section = section
         elif self.config_type == "configuration" and section is not None:
             config_section = f"profile {section}"
-        if (
-            config_section == None
-        ):  # TODO - Ruff recommends setting this to "is None" but may break
+        if config_section is None:
             config_section = self.default_config_section
         return config_section
 
