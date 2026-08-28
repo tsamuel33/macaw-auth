@@ -2,11 +2,13 @@ from pathlib import Path
 
 import pytest
 
-from src.macaw_auth.classes.configuration import Configuration
-from src.macaw_auth.classes.configuration import ConfigurationError
+from src.macaw_auth.classes.configuration import (
+    Configuration,
+    ConfigurationError,
+)
+
 
 class TestConfigurationFiles:
-
     config_file = Path.cwd() / "tests" / "test_files" / "config"
     creds_file = Path.cwd() / "tests" / "test_files" / "credentials"
 
@@ -20,7 +22,7 @@ class TestConfigurationFiles:
         with pytest.raises(ConfigurationError, match="does not exist"):
             Configuration("use-defaults", config_path)
 
-    def test_use_non_existent_config_path(self):
-        config_path = Path.cwd()/"tests"/"test_files"/"credentials2"
+    def test_use_non_existent_creds_path(self):
+        config_path = Path.cwd() / "tests" / "test_files" / "credentials2"
         Configuration("use-defaults", config_path, "credential")
         assert Path.is_file(config_path)

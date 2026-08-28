@@ -1,4 +1,4 @@
-def arn_validation(arn : str, arn_type="role"):
+def arn_validation(arn: str, arn_type="role"):
     is_arn = True
     is_valid = True
     message = ""
@@ -18,21 +18,30 @@ def arn_validation(arn : str, arn_type="role"):
         elif arn_split[0] != "arn":
             is_valid = False
             message = "ARN should start with 'arn"
-        elif arn_split[1] not in ['aws', 'aws-cn', 'aws-us-gov']:
+        elif arn_split[1] not in ["aws", "aws-cn", "aws-us-gov"]:
             is_valid = False
-            message = "ARN partition should be one of 'aws', 'aws-cn', or 'aws-us-gov'"
+            message = (
+                "ARN partition should be one of 'aws', 'aws-cn', "
+                "or 'aws-us-gov'"
+            )
         elif arn_split[2] != "iam":
             is_valid = False
             message = "AWS service in ARN should be 'iam'"
-        elif arn_split[3] != '':
+        elif arn_split[3] != "":
             is_valid = False
             message = "ARN should have '::' between service and account number"
         elif not arn_split[5].startswith(arn_prefix):
             is_valid = False
-            message = "ARN of type '{}' should have '{}' before the resource path and name".format(arn_type, arn_prefix)
+            message = (
+                f"ARN of type '{arn_type}' should have '{arn_prefix}' "
+                "before the resource path and name"
+            )
         elif arn_type == "saml" and len(arn_split[5].split("/")) > 2:
             is_valid = False
-            message = "SAML provider name should not have '/'. Ensure you have not included a path."
+            message = (
+                "SAML provider name should not have '/'. Ensure you "
+                "have not included a path."
+            )
         else:
             account = arn_split[4]
             try:
