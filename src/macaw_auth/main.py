@@ -243,9 +243,9 @@ def arg_setup():
         description="Available Commands",
         help="Valid Commands",
     )
-    login = setup_login_parser(commands)
-    assumerole = setup_assumerole_parser(commands)
-    web = setup_web_parser(commands)
+    setup_login_parser(commands)
+    setup_assumerole_parser(commands)
+    setup_web_parser(commands)
     # timeleft = setup_timeleft_parser(commands)
     # refresh = setup_refresh_parser(commands)
     # ecrlogin = setup_ecrlogin_parser(commands)
