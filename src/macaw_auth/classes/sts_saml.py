@@ -94,27 +94,32 @@ class AWSSTSService:
         session_name = response["UserId"].split(":")[-1]
         return session_name
 
-    def generate_arn(self, partition, account, iam_type, name, path):
-        default = lambda x, y: (
+    def __default_arn_elements(self, value, element_type):
+        return (
             "aws"
-            if x == None and y == "partition"
+            if value is None and element_type == "partition"
             else "/"
-            if x == None and y == "path"
-            else x
+            if value is None and element_type == "path"
+            else value
         )
+
+    def generate_arn(self, partition, account, iam_type, name, path):
         if iam_type == "saml":
             prefix = "saml-provider"
             cleaned_path = ""
         elif iam_type == "role":
             prefix = "role"
-            cleaned_path = default(path, "path")
+            cleaned_path = self.__default_arn_elements(path, "path")
             if path.startswith("/"):
                 cleaned_path = cleaned_path[1 : len(cleaned_path)]
             if path.endswith("/"):
                 cleaned_path = cleaned_path[:-1]
         suffix = name if len(cleaned_path) == 0 else f"{cleaned_path}/{name}"
         arn = "arn:{}:iam::{}:{}/{}".format(
-            default(partition, "partition"), account, prefix, suffix
+            self.__default_arn_elements(partition, "partition"),
+            account,
+            prefix,
+            suffix,
         )
         arn_validation(arn, iam_type)
         return arn
