@@ -1,9 +1,11 @@
-import requests
-from requests_ntlm import HttpNtlmAuth #pip install requests-ntlm
-from bs4 import BeautifulSoup #pip install beautifulsoup4
+import re
 from getpass import getpass
 from urllib.parse import urlparse
-import re
+
+import requests
+from bs4 import BeautifulSoup  # pip install beautifulsoup4
+from requests_ntlm import HttpNtlmAuth  # pip install requests-ntlm
+
 
 class AuthenticationError(Exception):
     """
@@ -14,11 +16,14 @@ class AuthenticationError(Exception):
         message (str): message indicating the specifics of the error
     """
 
-    def __init__(self,
-            message='Authentication response did not contain a valid' \
-                    ' SAML assertion. Please check your credentials.'):
+    def __init__(
+        self,
+        message="Authentication response did not contain a valid"
+        " SAML assertion. Please check your credentials.",
+    ):
         self.message = message
         super().__init__(self.message)
+
 
 class SAMLAssertion:
     """
@@ -36,11 +41,16 @@ class SAMLAssertion:
     """
 
     def __init__(
-            self, username, password, identity_url, auth_type,
-            ssl_verification=True):
+        self,
+        username,
+        password,
+        identity_url,
+        auth_type,
+        ssl_verification=True,
+    ):
         """
         Constructs the attributes of the SAMLAssertion object
-        
+
         Attributes:
             identity_url (str): The URL to authenticate to
             ssl_verification (bool): Whether the SSL certificate of the
@@ -58,7 +68,7 @@ class SAMLAssertion:
         self.__password = password
         self.session = requests.Session()
         self.make_saml_request()
-        if self.auth_type == 'web_form':
+        if self.auth_type == "web_form":
             self.create_web_form_payload()
             self.authenticate_to_web_form()
         self.get_saml_assertion()
@@ -68,32 +78,30 @@ class SAMLAssertion:
         Makes SAML authentication request
         """
 
-        if self.auth_type == 'ntlm':
-            self.session.auth = HttpNtlmAuth(self.__username,
-                                             self.__password,
-                                             self.session)
+        if self.auth_type == "ntlm":
+            self.session.auth = HttpNtlmAuth(
+                self.__username, self.__password, self.session
+            )
         self.response = self.session.get(
-            self.identity_url,verify=self.ssl_verification)
-        if self.auth_type == 'web_form':
+            self.identity_url, verify=self.ssl_verification
+        )
+        if self.auth_type == "web_form":
             self._redirect_url = self.response.url
-        self.__soup = BeautifulSoup(
-            self.response.text, features="html.parser")
+        self.__soup = BeautifulSoup(self.response.text, features="html.parser")
 
     def create_web_form_payload(self):
         """
         Creates required payload for web form SAML requests
-         """
+        """
 
         payload = {}
 
-        for inputtag in self.__soup.find_all(re.compile('(INPUT|input)')):
-            name = inputtag.get('name','')
-            value = inputtag.get('value','')
+        for inputtag in self.__soup.find_all(re.compile("(INPUT|input)")):
+            name = inputtag.get("name", "")
+            value = inputtag.get("value", "")
             # Locate user credential fields in web form by searching
             # for "user[name]", "email", and "pass[word]"
-            if "user" in name.lower():
-                payload[name] = self.__username
-            elif "email" in name.lower():
+            if "user" in name.lower() or "email" in name.lower():
                 payload[name] = self.__username
             elif "pass" in name.lower():
                 payload[name] = self.__password
@@ -108,17 +116,19 @@ class SAMLAssertion:
         Makes SAML authentication requests for web form authentication
         """
 
-        for inputtag in self.__soup.find_all(re.compile('(FORM|form)')):
-            action = inputtag.get('action')
-            loginid = inputtag.get('id')
-            if (action and loginid == "loginForm"):
+        for inputtag in self.__soup.find_all(re.compile("(FORM|form)")):
+            action = inputtag.get("action")
+            loginid = inputtag.get("id")
+            if action and loginid == "loginForm":
                 parsedurl = urlparse(self.identity_url)
                 redirect = f"{parsedurl.scheme}://{parsedurl.netloc}{action}"
                 self._redirect_url = redirect
 
-        response = self.session.post(self._redirect_url,
-                                     data=self.__payload,
-                                     verify=self.ssl_verification)
+        response = self.session.post(
+            self._redirect_url,
+            data=self.__payload,
+            verify=self.ssl_verification,
+        )
         self.__soup = BeautifulSoup(response.text, features="html.parser")
 
     def get_saml_assertion(self):
@@ -127,22 +137,24 @@ class SAMLAssertion:
         """
 
         mfa_enabled = False
-        assertion = ''
+        assertion = ""
 
-        for inputtag in self.__soup.find_all('input'):
-            if(inputtag.get('name') == 'SAMLResponse'):
-                assertion = inputtag.get('value')
+        for inputtag in self.__soup.find_all("input"):
+            if inputtag.get("name") == "SAMLResponse":
+                assertion = inputtag.get("value")
                 break
-            if('vip' in inputtag.get('name')):
+            if "vip" in inputtag.get("name"):
                 mfa_enabled = True
 
-        if (assertion == ''):
+        if assertion == "":
             if mfa_enabled:
                 assertion = self.authenticate_with_mfa()
             else:
-                message = "Authentication attempt did not contain a " \
-                    "valid SAML assertion. Please confirm " \
+                message = (
+                    "Authentication attempt did not contain a "
+                    "valid SAML assertion. Please confirm "
                     "credentials and network connectivity."
+                )
                 raise AuthenticationError(message)
         self.assertion = assertion
 
@@ -151,13 +163,12 @@ class SAMLAssertion:
         Gets code required for user to log in with Symantec VIP
         """
 
-        vip_code = getpass(
-            prompt='Enter your Symantec VIP security code: ')
+        vip_code = getpass(prompt="Enter your Symantec VIP security code: ")
         try:
             int(vip_code)
             return vip_code
         except ValueError:
-            print('ERROR: Code must be a number. Try again...')
+            print("ERROR: Code must be a number. Try again...")
             self.get_vip_code()
 
     def authenticate_with_mfa(self, attempt=0):
@@ -172,9 +183,9 @@ class SAMLAssertion:
             code = self.get_vip_code()
             payload = {}
 
-            for inputtag in self.__soup.find_all('input'):
-                name = inputtag.get('name','')
-                value = inputtag.get('value','')
+            for inputtag in self.__soup.find_all("input"):
+                name = inputtag.get("name", "")
+                value = inputtag.get("value", "")
                 # Locate VIP code fields in web form by
                 # searching for "[security_]code"
                 if "code" in name.lower():
@@ -185,17 +196,18 @@ class SAMLAssertion:
 
             # Performs the submission of the Symantec VIP code
             response = self.session.post(
-                self._redirect_url, data=payload,
-                verify=self.ssl_verification)
+                self._redirect_url, data=payload, verify=self.ssl_verification
+            )
             self.__soup = BeautifulSoup(response.text, features="html.parser")
-            for inputtag in self.__soup.find_all('input'):
-                if(inputtag.get('name') == 'SAMLResponse'):
-                    assertion = inputtag.get('value')
+            for inputtag in self.__soup.find_all("input"):
+                if inputtag.get("name") == "SAMLResponse":
+                    assertion = inputtag.get("value")
                     invalid_assertion = False
                     break
             if invalid_assertion:
-                msg = "Incorrect code. Try again... " \
-                      f"(Strike {current_attempt}!)"
+                msg = (
+                    f"Incorrect code. Try again... (Strike {current_attempt}!)"
+                )
                 print(msg)
                 self.authenticate_with_mfa(current_attempt)
             else:

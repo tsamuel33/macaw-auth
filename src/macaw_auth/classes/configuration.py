@@ -1,6 +1,7 @@
 import configparser
 from pathlib import Path
 
+
 class ConfigurationError(Exception):
     """
     Raise an exception when required configuration items are set
@@ -10,10 +11,12 @@ class ConfigurationError(Exception):
         message (str) : message indicating the specifics of the error
     """
 
-    def __init__(self,
-            message='Incorrect configuration. Check your config file'):
+    def __init__(
+        self, message="Incorrect configuration. Check your config file"
+    ):
         self.message = message
         super().__init__(self.message)
+
 
 class Configuration:
     """
@@ -38,15 +41,19 @@ class Configuration:
     default_credentials_file = Path.home() / ".aws" / "credentials"
 
     def __init__(
-            self, section_name, config_file=None,
-            config_type : str = "configuration", **config_parameters):
+        self,
+        section_name,
+        config_file=None,
+        config_type: str = "configuration",
+        **config_parameters,
+    ):
         """
         Construct the attributes of the Configuration object.
-        
+
         Arguments:
             section_name (str): The section of the configuration file
                 that will be used with macaw-auth commands
-            config_file (str): Location of the configuration file 
+            config_file (str): Location of the configuration file
             config_type (str): Config file type
             config_parameters (kwargs): Extra parameters used for the
                 Configuration class methods
@@ -78,9 +85,9 @@ class Configuration:
         if file_path is not None:
             config_path = Path(file_path)
         else:
-            if self.config_type == 'configuration':
+            if self.config_type == "configuration":
                 config_path = self.default_configuration_file
-            elif self.config_type == 'credential':
+            elif self.config_type == "credential":
                 config_path = self.default_credentials_file
         return config_path
 
@@ -97,13 +104,12 @@ class Configuration:
         """
 
         config_section = None
-        if self.config_type == 'credential':
+        if self.config_type == "credential":
             if section is not None:
                 config_section = section
-        elif self.config_type == 'configuration':
-            if section is not None:
-                config_section = f"profile {section}"
-        if config_section == None:
+        elif self.config_type == "configuration" and section is not None:
+            config_section = f"profile {section}"
+        if config_section is None:
             config_section = self.default_config_section
         return config_section
 
@@ -111,9 +117,9 @@ class Configuration:
         """
         Create the Configuration class object by loading the specified
         or default configuration file with provided parameters.
-        
+
         Arguments:
-            config_path (str): Location of the configuration file 
+            config_path (str): Location of the configuration file
 
         Returns:
             config (Configuration): The Configuration class object
@@ -126,15 +132,20 @@ class Configuration:
                 with open(self.config_path, "w") as config_file:
                     config_file.write("[default]")
             elif self.config_type == "configuration":
-                message = f"Configuration file: {self.config_path} " \
-                          "does not exist. Please create the file " \
-                          "and set the configuration options."
+                message = (
+                    f"Configuration file: {self.config_path} "
+                    "does not exist. Please create the file "
+                    "and set the configuration options."
+                )
                 raise ConfigurationError(message)
         config = configparser.ConfigParser(
-               default_section=self.default_config_section)
+            default_section=self.default_config_section
+        )
         config.read(self.config_path)
-        if (self.config_section not in config.sections() and
-                self.config_section != self.default_config_section):
+        if (
+            self.config_section not in config.sections()
+            and self.config_section != self.default_config_section
+        ):
             config.add_section(self.config_section)
         return config
 
@@ -153,12 +164,12 @@ class Configuration:
         return setting
 
     def set_config_value(
-            self, attribute_name, value,
-            required=False, default=''):
+        self, attribute_name, value, required=False, default=""
+    ):
         """
         Set the value of the selected attribute within the
         Configuration object.
-        
+
         Arguments:
             attribute_name (str): The name of the attribute for which
                 the value will be set
@@ -175,15 +186,17 @@ class Configuration:
             setting = self.get_config_setting(attribute_name)
             if setting is None:
                 if required:
-                    message = "Required configuration value is " \
-                              f"missing: {attribute_name}"
+                    message = (
+                        "Required configuration value is "
+                        f"missing: {attribute_name}"
+                    )
                     raise ConfigurationError(message)
                 else:
                     self.config[self.config_section][attribute_name] = default
             else:
                 self.config[self.config_section][attribute_name] = setting
-    
-    def _parse_config_parameters(self, parameters : dict):
+
+    def _parse_config_parameters(self, parameters: dict):
         """
         Set configuration values for any keyword arguments passed to
         the Configuration class.
@@ -194,8 +207,7 @@ class Configuration:
         """
 
         for key, value in parameters.items():
-            self.set_config_value(
-                key, value[0], value[1], value[2])
+            self.set_config_value(key, value[0], value[1], value[2])
 
     def write_config(self):
         """
@@ -203,22 +215,31 @@ class Configuration:
         file.
         """
 
-        with open(self.config_path, 'w+') as configfile:
+        with open(self.config_path, "w+") as configfile:
             self.config.write(configfile)
 
         if self.config_type == "credential":
-            print('\n\n')
-            print('-'*64)
-            print('Your new CLI credentials have been stored in the '
-                  f'AWS configuration file {self.config_path} under '
-                  f'the {self.config_section} profile.')
-            print('Note that they will expire at '
-                  '{}.'.format(self.config[self.config_section]['expiration']))
-            print('After this time, you may safely rerun this script'
-                  ' to refresh your credentials.')
-            if self.config_section != 'default':
-                print('To use this credential, call the AWS CLI with '
-                      'the --profile option (e.g. aws --profile '
-                      f'{self.config_section} ec2 describe-instances).')
-            print('-'*64)
-            print('\n\n')
+            print("\n\n")
+            print("-" * 64)
+            print(
+                "Your new CLI credentials have been stored in the "
+                f"AWS configuration file {self.config_path} under "
+                f"the {self.config_section} profile."
+            )
+            print(
+                "Note that they will expire at {}.".format(
+                    self.config[self.config_section]["expiration"]
+                )
+            )
+            print(
+                "After this time, you may safely rerun this script"
+                " to refresh your credentials."
+            )
+            if self.config_section != "default":
+                print(
+                    "To use this credential, call the AWS CLI with "
+                    "the --profile option (e.g. aws --profile "
+                    f"{self.config_section} ec2 describe-instances)."
+                )
+            print("-" * 64)
+            print("\n\n")
