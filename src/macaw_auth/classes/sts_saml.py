@@ -9,6 +9,19 @@ from macaw_auth.functions.common import arn_validation
 
 
 class AWSSTSService:
+    """
+    Makes calls to the STS API to support various features of the tool
+
+    Arguments:
+        region (str): The AWS region to use
+        access_key (str): The user's IAM access key (optional)
+        secret_key (str): The user's IAM secret key (optional)
+        session_token (str): The IAM session token for the user's
+            credentials (optional)
+        verify_ssl (bool): Whether the SSL certificate of the STS
+            endpoint should be verified
+    """
+
     def __init__(
         self,
         region="us-east-1",
@@ -17,6 +30,13 @@ class AWSSTSService:
         session_token=None,
         verify_ssl=True,
     ):
+        """
+        Construct the attributes of the AWSSTSService object
+
+        Attributes:
+            region (str): AWS region in which STS calls will be made
+            sts (boto3.client): STS Boto3 client
+        """
         self.region = region
         self.sts = boto3.client(
             "sts",
@@ -40,6 +60,22 @@ class AWSSTSService:
         session_duration=3600,
         output_format="json",
     ):
+        """
+        Logs in to AWS and obtains session keys
+
+        Arguments:
+            account_number (str): AWS account number which user will log in to
+            idp_name (str): Name of the IAM identity provider
+            role_name (str): Name of the role to assume
+            saml_assertion (xml): XML-formatted SAML assertion
+            target_profile (str): Name of the profile in the credentials file
+                in which the session keys will be stored
+            credential_file (str): Location of the credentials file
+            partition (str): The AWS partition used for login
+            path (str): The optional path in the IAM role that will be assumed
+            session_duration (int): Duration of the login session in seconds
+            output_format (str): The format of command outputs (i.e., json)
+        """
         empty = ["", None]
         if account_number in empty or idp_name in empty or role_name in empty:
             self.get_authorized_roles(saml_assertion)
@@ -84,12 +120,30 @@ class AWSSTSService:
         path,
         duration,
     ):
+        """
+        Assumes an IAM role
+
+        Arguments:
+            account_number (str): AWS account number which user will log in to
+            role_name (str): Name of the role to assume
+            session_name (str): Name of the assumed role session
+            partition (str): The AWS partition used for login
+            path (str): The optional path in the IAM role that will be assumed
+            duration (int): Duration of the login session in seconds
+        """
         self.role_arn = self.generate_arn(
             partition, account_number, "role", role_name, path
         )
         self.assume_role(self.role_arn, session_name, duration)
 
     def get_role_session_name(self):
+        """
+        Gets the session name for role assumption. This value defaults to the
+        user's ID
+
+        Returns:
+            session_name (str): Name of the assumed role session
+        """
         response = self.sts.get_caller_identity()
         session_name = response["UserId"].split(":")[-1]
         return session_name
@@ -104,6 +158,20 @@ class AWSSTSService:
         )
 
     def generate_arn(self, partition, account, iam_type, name, path):
+        """
+        Generates the ARN of the IAM role or SAML provider based on inputs
+
+        Arguments:
+            partition (str): The AWS partition used for login
+            account (str): AWS account number which user will log in to
+            iam_type (str): Determines whether the output will be an IAM role
+                or SAML identity provider
+            name (str): Name of the role or identity provider
+            path (str): The optional path in the IAM role that will be assumed
+
+        Returns:
+            arn (str): The ARN of the IAM role or SAML identity provider
+        """
         if iam_type == "saml":
             prefix = "saml-provider"
             cleaned_path = ""
@@ -130,6 +198,16 @@ class AWSSTSService:
     # SAML Assertion doesn't contain the requested Role and Metadata in the
     # attributes
     def assume_role_with_saml(self, assertion, duration):
+        """
+        Assumes IAM role via SAML
+
+        Arguments:
+            assertion (xml): XML-formatted SAML assertion
+            duration (int): Duration of the login session in seconds
+
+        Returns:
+            response (str): The session credentials for the assumed role
+        """
         response = self.sts.assume_role_with_saml(
             RoleArn=self.role_arn,
             PrincipalArn=self.principal_arn,
@@ -139,6 +217,12 @@ class AWSSTSService:
         return response
 
     def get_authorized_roles(self, assertion):
+        """
+        Obtains a list of roles that the user is authorized to access via SAML
+
+        Arguments:
+            assertion (xml): XML-formatted SAML assertion
+        """
         # Parse the returned assertion and extract the authorized roles
         awsroles = []
         root = ET.fromstring(base64.b64decode(assertion))
@@ -192,6 +276,17 @@ class AWSSTSService:
     # TODO - Allow role assumption after login
     # TODO - Add ability to assume role using external ID and MFA
     def assume_role(self, role_arn, session_name, duration):
+        """
+        Assume an IAM role via AWS STS
+
+        Arguments:
+            role_arn (str): ARN of the role to assume
+            session_name (str): Name of the assumed role session
+            duration (int): Duration of the login session in seconds
+
+        Returns:
+            response (str): The session credentials for the assumed role
+        """
         response = self.sts.assume_role(
             RoleArn=role_arn,
             RoleSessionName=session_name,
