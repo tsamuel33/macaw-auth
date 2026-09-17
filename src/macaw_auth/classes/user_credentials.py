@@ -35,7 +35,7 @@ class UserCredentials:
         """
         Construct the attributes of the UserCredentials object
 
-        Arguments:
+        Attributes:
             username (str): user's login name
             identity_url (str): url used to log in to AWS
             auth_type (str): whether authentication is via web form or ntlm
